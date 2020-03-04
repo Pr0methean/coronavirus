@@ -20,7 +20,7 @@ target_fasta_file_name = "4-march-2020_57xSARS-nCoV-2_consensus.fa"
 FASTA_PATH = os.path.join("blacklist", target_fasta_file_name)
 
 # path for output
-OUTFILE_PATH = os.path.join("guides", "SARS-nCoV-2_consensus_conserved_watson_crick_guides.csv")
+OUTFILE_PATH = os.path.join("guides", "SARS-nCoV-2_consensus_conserved_watson_crick_guides_RNA.csv")
 
 # conserved substrings found manually in a Clustal alignment w/ ctrl-f ninjitsu
 CONSERVED = [
@@ -59,7 +59,7 @@ def design_guides():
     if any([seq in kmer for seq in CONSERVED]):
       nconserved = nconserved + 1
       print(count, kmer, "conserved!")
-      guides.add(str(Seq(kmer).reverse_complement()))
+      guides.add(str(Seq(kmer).reverse_complement().transcribe()))
   print("guides", guides, "percent conserved:", nconserved / count * 100)
   with open(OUTFILE_PATH, "w+") as outfile:
     outfile.write("\n".join(list(guides)))
