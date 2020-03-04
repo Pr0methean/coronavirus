@@ -1,0 +1,123 @@
+MN908947.3 - SARS-Cov-2 (2019)
+KF600627.1 - MERS (2013)
+AY278488.2 - SARS (2003)
+
+
+360 ... in hg - ttattatgattcaatgagttatgaggatcaagatgcacttttcgcatatacaaaacgtaatgtcatccctactataactcaaatgaatcttaagtatgccattagtgcaaagaatagagctcgcaccgtagctggtgtctctatctgtagtactatgaccaatagacagtttcatcaaaaattattgaaatcaatagccgccactagaggagctactgtagtaattggaacaagcaaattctatggtggttggcacaacatgttaaaaactgtttatagtgatgtagaaaaccctcaccttatgggttgggattatcctaaatgtgatagagccatgcctaacatgcttagaattatggc
+cgtaatgtcatccctactataactcaaatgaatcttaagtatgccattagtgcaaagaatagagctcgcac - 71, in hg!!!
+tatgggttgggattatcctaaatgtgatagagccatgcctaacatgcttagaattatggc - in hg
+actcaaatgaatcttaagtatgccattagtgcaaagaatagagctcgcac - in hg ??? 50!
+ggaccacctggtactggtaagagtcattttgc - in hg
+ccttataattcacagaatgctgt - in hg (fatty acid amide hydrolase)
+ccttataattcacagaa - in hg + in ncov consensus
+tgtggtagtgttggtt - in hg (not in consensus)
+tatgggttgggatta - in hg + in ncov consensus (zinc finger, neuraminide sialyltransferase)
+tttaaatattggga - in hg (ig heavy chain variable region!)
+ggtttctttaagga - in hg (tgf-beta receptor!)
+actcaaatgaatct - in hg (nuclear envelope protein!)
+acggtttcgtccg - in hg (rab11 + mapk8ip2)
+cttttcaaactgt - in hg (kras oncogene, adrenoceptor a2a)
+attcacagacttc - in hg (impdh1p7)
+aattggaattgt - in hg (ig heavy chain variable region)
+cgtgtacgccaa - in hg (smyd3)
+ttcttgttaaca - in hg (usherin, golgin, kazn, atm)
+gtggtcattcaa - in hg (atp synthase, chloride voltage gated ion channel)
+
+20mers containing conserved sequences:
+gctgcttacggtttcgtccg
+ctgcttacggtttcgtccgt
+tgcttacggtttcgtccgtg
+gcttacggtttcgtccgtgt
+cttacggtttcgtccgtgtt
+ttacggtttcgtccgtgttg
+tacggtttcgtccgtgttgc
+acggtttcgtccgtgttgca
+aactacacaattggaattgt
+actacacaattggaattgtg
+ctacacaattggaattgtgt
+tacacaattggaattgtgtt
+acacaattggaattgtgtta
+cacaattggaattgtgttaa
+acaattggaattgtgttaat
+caattggaattgtgttaatt
+aattggaattgtgttaattg
+ttcatgtggtagtgttggtt
+tcatgtggtagtgttggttt
+catgtggtagtgttggtttt
+atgtggtagtgttggtttta
+tgtggtagtgttggttttaa
+taggtgaacgtgtacgccaa
+aggtgaacgtgtacgccaag
+ggtgaacgtgtacgccaagc
+gtgaacgtgtacgccaagct
+tgaacgtgtacgccaagctt
+gaacgtgtacgccaagcttt
+aacgtgtacgccaagctttg
+acgtgtacgccaagctttgt
+cgtgtacgccaagctttgtt
+cgttattttaaatattggga
+gttattttaaatattgggat
+ttattttaaatattgggatc
+tattttaaatattgggatca
+attttaaatattgggatcag
+ttttaaatattgggatcaga
+tttaaatattgggatcagac
+aatgttgcttttcaaactgt
+atgttgcttttcaaactgtc
+tgttgcttttcaaactgtca
+gttgcttttcaaactgtcaa
+ttgcttttcaaactgtcaaa
+tgcttttcaaactgtcaaac
+gcttttcaaactgtcaaacc
+cttttcaaactgtcaaaccc
+tctaagggtttctttaagga
+ctaagggtttctttaaggaa
+taagggtttctttaaggaag
+aagggtttctttaaggaagg
+agggtttctttaaggaagga
+gggtttctttaaggaaggaa
+ggtttctttaaggaaggaag
+actataactcaaatgaatct
+ctataactcaaatgaatctt
+tataactcaaatgaatctta
+ataactcaaatgaatcttaa
+taactcaaatgaatcttaag
+aactcaaatgaatcttaagt
+actcaaatgaatcttaagta
+caccttatgggttgggatta
+accttatgggttgggattat
+ccttatgggttgggattatc
+cttatgggttgggattatcc
+ttatgggttgggattatcct
+tatgggttgggattatccta
+ctttgcaattcacagacttc
+tttgcaattcacagacttca
+ttgcaattcacagacttcat
+tgcaattcacagacttcatt
+gcaattcacagacttcatta
+caattcacagacttcattaa
+aattcacagacttcattaag
+attcacagacttcattaaga
+tcaccttataattcacagaa
+caccttataattcacagaat
+accttataattcacagaatg
+ccttataattcacagaatgc
+tagtgatgttcttgttaaca
+agtgatgttcttgttaacaa
+gtgatgttcttgttaacaac
+tgatgttcttgttaacaact
+gatgttcttgttaacaacta
+atgttcttgttaacaactaa
+tgttcttgttaacaactaaa
+gttcttgttaacaactaaac
+ttcttgttaacaactaaacg
+cgttccatgtggtcattcaa
+gttccatgtggtcattcaat
+ttccatgtggtcattcaatc
+tccatgtggtcattcaatcc
+ccatgtggtcattcaatcca
+catgtggtcattcaatccag
+atgtggtcattcaatccaga
+tgtggtcattcaatccagaa
+gtggtcattcaatccagaaa
+
