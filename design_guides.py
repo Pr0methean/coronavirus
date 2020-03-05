@@ -15,6 +15,9 @@ K = 30
 # redis key for the set of whitelist (host/off-target) kmers
 whitelist_key = "whitelist:lung:cds"
 
+# path to a fasta file with host sequences to avoid
+whitelist_file_path = os.path.join("whitelist", "lung-tissue-gene-cds.fa")
+
 # sequence fasta for the target
 target_fasta_file_name = "4-march-2020_57xSARS-nCoV-2_consensus.fa"
 FASTA_PATH = os.path.join("blacklist", target_fasta_file_name)
@@ -48,6 +51,12 @@ def getKmers(sequence, k, step):
   for x in range(0, len(sequence) - k, step):
     yield sequence[x:x+k]
 
+def makeWhitelist():
+  with open(whitelist_file_path, "r") as whitelist_file:
+    for record in SeqIO.parse(whitelist_file, "fasta"):
+      for kmer in getKmers(record.seq.lower(), K, 1):
+        r.sadd(whitelist_key, str(kmer))
+
 def design_guides():
   ncov_consensus = read_fasta(FASTA_PATH)
   kmers = getKmers(str(ncov_consensus), 30, 1)
@@ -65,6 +74,7 @@ def design_guides():
     outfile.write("\n".join(list(guides)))
 
 if __name__ == "__main__":
+  # makeWhitelist() # docker run -p 6379:6379 -d redis redis-server --appendonly yes
   design_guides()
 
 
@@ -117,17 +127,6 @@ if __name__ == "__main__":
 # an even slower way to make wobbles
 # def find_wobbles(sequence, nucleotides=['g', 't', 'y', 'n']):
 #   return [(i, sequence[i]) for i in range(len(sequence)) if sequence[i] in nucleotides]
-
-# build a whitelist
-# count = 0
-# with open(os.path.join("whitelist", "lung-tissue-gene-cds.fa"), "r") as human_transcriptome:
-#   for record in SeqIO.parse(human_transcriptome, "fasta"):
-#     print(record.id)
-#     kmers = getKmers(record.seq.lower(), K, 1)
-#     for kmer in kmers:
-#       # count = count + 1
-#       # print(count, kmer)
-#       r.sadd("whitelist:lung:cds", str(kmer))
 
 # save the whitelist for later
 # with open(os.path.join("whitelist", f"lung-cds-{K}mers.txt"), "w") as outfile:
