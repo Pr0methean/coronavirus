@@ -15,16 +15,30 @@ design anti-coronavirus CRISPR-Cas13 guides
 
 ## Prepare
 
+install clustal omega 
+install redis-cli and docker 
 download human transcriptome with this link: ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.39_GRCh38.p13/GCF_000001405.39_GRCh38.p13_rna.fna.gz
 found on page: https://www.ncbi.nlm.nih.gov/genome/?term=homo+sapiens
-download sequences of SARS, MERS, HKU1, and SARS-nCov-2 from ncbi
+download sequences of SARS, MERS, HKU1, and as many SARS-nCoV-2 genomes as possible from ncbi
+generate a consensus between as many SARS-nCoV-2 sequences as can be found at https://www.ncbi.nlm.nih.gov/labs/virus/vssi/#/
+align the prior outbreak sequences with the new consensus with `clustal -i combined.fasta -o combined.clu -outfmt=clu`
+open the alignment and use CTRL-F and type `************` until you can't find any matches, then back up and copy this conserved substring from the SARS-nCoV-2 sequence into some file (i did this already) ... gradually delete stars to get more conserved substrings
+run redis for the whitelist `docker run -p 6379:6379 -d redis redis-server --appendonly yes`
 combine the files with `cat $(ls -t) > combined.fasta`
-install clustal omega and align the viruses with `clustal -i combined.fasta -o combined.clu -outfmt=clu`
-install redis-cli and docker and run `docker run --name some-redis -d redis redis-server --appendonly yes`
 
 ## Act
 
+run `python design_guides.py` with python (I'm using 3.8)
+
 ## Reflect
+
+fancy stuff didn't work (adding the whole transcriptome to the whitelist was WAY too slow on my laptop...but it's embarassingly parallelizable problem to divide this text file and make kmers)
+likewise I tried a wobble powerset algorithm (see comments at bottom of design_guides.py) but this caused a combinatorial explosion because there are an insane number of possible 30mers. Could use a MAX ENTROPY heuristic for this algo to just choose the nucleotides which accomodate most wobble
+there are probably some gotchas in the gRNA design which 
+since I couldn't whitelist the whole transcriptome, the lung microRNA and long non-coding RNA aren't in the whitelist, which presents an opportunity for off target effects
+likewise, I'm not using Levenshtein distance for the whitelist cache hits, only exact matches, and there weren't any. That might be a false negative because guides could tolerate some mispairing, and wobble pairing, but I wanted to produce results and then improve it later
+
+STATUS: Work in Progress Minimum Viable Product
 
 ## References
 
