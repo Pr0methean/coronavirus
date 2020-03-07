@@ -4,7 +4,7 @@
 
 ## Problem: Silent spread of a disease
 
-There is active silent spread of SARS-Cov-2 causing Covid-19 which is 100-800x more lethal than flu.
+There is active silent spread of SARS-Cov-2 causing Covid-19 which is 200-400x more lethal than flu.
 Silent spread of a disease increases the probability of further increases in virulence / lethality because more hosts enable more replication events and each replication event can yield mutations which cause increased virulence / lethality
 
 ## Challenge
