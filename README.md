@@ -48,22 +48,16 @@
 
 ## References
 
-BLASTN Suite
-
-NCBI Nucleotide
-
-NCBI Virus
-
-EMBL EMBOSS CONS Consensus
-
-Clustal Omega
-
-Tips and Tricks for Cas13 https://zlab.bio/cas13
-
-Freije CA, et al. Programmable inhibition and detection of RNA viruses using Cas13. Mol Cell. 2019. https://doi.org/10.1016/j.molcel.2019.09.013.
-
-pC0046-EF1a-PspCas13b-NES-HIV https://www.addgene.org/103862/
-
-Grabherr MG, Haas BJ, Yassour M, Levin JZ, Thompson DA, Amit I, Adiconis X, Fan L, Raychowdhury R, Zeng Q, Chen Z, Mauceli E, Hacohen N, Gnirke A, Rhind N, di Palma F, Birren BW, Nusbaum C, Lindblad-Toh K, Friedman N, Regev A. Full-length transcriptome assembly from RNA-seq data without a reference genome. Nat Biotechnol. 2011 May 15;29(7):644-52. doi: 10.1038/nbt.1883. PubMed PMID: 21572440.
-
-Cock PA, Antao T, Chang JT, Chapman BA, Cox CJ, Dalke A, Friedberg I, Hamelryck T, Kauff F, Wilczynski B and de Hoon MJL (2009) Biopython: freely available Python tools for computational molecular biology and bioinformatics. Bioinformatics, 25, 1422-1423
+- BLASTN Suite
+- NCBI Nucleotide
+- NCBI Virus
+- EMBL EMBOSS CONS Consensus
+- Clustal Omega
+- Freije CA, et al. Programmable inhibition and detection of RNA viruses using Cas13. Mol Cell. 2019. https://doi.org/10.1016/j.molcel.2019.09.013.
+- Tips and Tricks for Cas13 https://zlab.bio/cas13
+- pC0046-EF1a-PspCas13b-NES-HIV https://www.addgene.org/103862/
+- Grabherr MG, Haas BJ, Yassour M, Levin JZ, Thompson DA, Amit I, Adiconis X, Fan L, Raychowdhury R, Zeng Q, Chen Z, Mauceli E, Hacohen N, Gnirke A, Rhind N, di Palma F, Birren BW, Nusbaum C, Lindblad-Toh K, Friedman N, Regev A. Full-length transcriptome assembly from RNA-seq data without a reference genome. Nat Biotechnol. 2011 May 15;29(7):644-52. doi: 10.1038/nbt.1883. PubMed PMID: 21572440.
+- Cock PA, Antao T, Chang JT, Chapman BA, Cox CJ, Dalke A, Friedberg I, Hamelryck T, Kauff F, Wilczynski B and de Hoon MJL (2009) Biopython: freely available Python tools for computational molecular biology and bioinformatics. Bioinformatics, 25, 1422-1423
+- Glasser SW, Burhans MS, Eszterhas SK, Bruno MD, Korfhagen TR. Human SP-C gene sequences that confer lung epithelium-specific expression in transgenic mice. Am J Physiol Lung Cell Mol Physiol. 2000;278(5):L933–L945. doi:10.1152/ajplung.2000.278.5.L933
+- Vanderbilt JN, Gonzalez RF, Allen L, et al. High-efficiency type II cell-enhanced green fluorescent protein expression facilitates cellular identification, tracking, and isolation. Am J Respir Cell Mol Biol. 2015;53(1):14–21. doi:10.1165/rcmb.2014-0348MA "
+- Flodby, P., Borok, Z., Banfalvi, A., Zhou, B., Gao, D., Minoo, P., ... & Crandall, E. D. (2010). Directed expression of Cre in alveolar epithelial type 1 cells. American journal of respiratory cell and molecular biology, 43(2), 173-178.
