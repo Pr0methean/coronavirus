@@ -51,6 +51,8 @@ BLASTN Suite
 
 Genbank
 
+EMBL EMBOSS CONS Consensus
+
 Clustal Omega
 
 Tips and Tricks for Cas13 https://zlab.bio/cas13
