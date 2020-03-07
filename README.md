@@ -2,8 +2,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-STATUS: Minimum Viable Product - Work in Progress - Ready for Peer Review + Bench Tests
-NEXT: Design Plasmids with Promoters (Sp1, Sp3, TTF-1, and HNF-3α) 
+- STATUS: Minimum Viable Product - Work in Progress - Ready for Peer Review + Bench Tests
+- NEXT: Design Plasmids with Promoters (Sp1, Sp3, TTF-1, and HNF-3α) 
 
 ## Problem: Covid-19 Outbreak
 
