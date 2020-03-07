@@ -50,7 +50,9 @@
 
 BLASTN Suite
 
-Genbank
+NCBI Nucleotide
+
+NCBI Virus
 
 EMBL EMBOSS CONS Consensus
 
