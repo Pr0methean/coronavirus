@@ -1,5 +1,7 @@
 # Hack Coronavirus with Redis and CRISPR
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+
 ## Problem: Silent spread of a disease
 
 There is active silent spread of SARS-Cov-2 causing Covid-19 which is 100-800x more lethal than flu.
