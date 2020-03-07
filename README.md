@@ -2,18 +2,22 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-## Problem: Silent spread of a disease
+STATUS: Minimum Viable Product - Work in Progress - Ready for Peer Review + Bench Tests
 
-There is active silent spread of SARS-Cov-2 causing Covid-19 which is 200-400x more lethal than flu.
-Silent spread of a disease increases the probability of further increases in virulence / lethality because more hosts enable more replication events and each replication event can yield mutations which cause increased virulence / lethality
+## Problem: Covid-19 Outbreak
+
+- There is active silent spread of SARS-Cov-2 causing Covid-19 which is 200-400x more lethal than flu. Over 100,000 cases, with new cases outstripping recoveries, globally distributed community-acquired ("cat out of the bag") 
+- Silent spread of a disease increases the probability of further increases in virulence / lethality because more hosts enable more replication events and each replication event can yield mutations which cause increased virulence / lethality
 
 ## Challenge
 
-How do you design CRISPR guides to target SARS-Cov-2 conserved regions (which are unlikely to mutate) without off-target effects upon the human genome or common probiotic / beneficial bugs.
+- How do you delete Coronavirus? 
 
 ## Opportunity
 
-design anti-coronavirus CRISPR-Cas13 guides
+- delete coronavirus genome conserved sequences with CRISPR-Cas13 RNA-guided RNA-knockdown
+- deliver with inhalers of nanoparticles / adenovirus (non-replicating)
+- express therapy only in lung cells with surfactant promoter
 
 ## Prepare
 
@@ -40,8 +44,6 @@ design anti-coronavirus CRISPR-Cas13 guides
 - there are probably some gotchas in the gRNA design which haven't been accounted
 - since I couldn't whitelist the whole transcriptome, the lung microRNA and long non-coding RNA aren't in the whitelist, which presents an opportunity for off target effects
 - likewise, I'm not using Levenshtein distance for whitelist cache hits, only exact matches, and there weren't any. That might be a false negative because guides could tolerate some mispairing, and wobble pairing, but I wanted to produce results and then improve it later
-
-STATUS: Work in Progress Minimum Viable Product
 
 ## References
 
