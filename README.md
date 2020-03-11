@@ -1,9 +1,24 @@
 # Hack Coronavirus
 
+## NOTE: Please help find a lab to run in vitro tests on this! Forward this page to anyone who might have a capable lab
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 - STATUS: Minimum Viable Product - Work in Progress - Ready for Peer Review
-- NEXT: Design Plasmids with Promoters (Sp1, Sp3, TTF-1, and HNF-3α) 
+- NEXT: Design Plasmids with Promoters (PDPN, Sp1, Sp3, TTF-1, HNF-3α)
+
+## Usage
+```
+docker run -p 6379:6379 -d redis redis-server --appendonly yes
+python design-guides.py
+```
+
+## Folders
+- Blacklist: Target sequences (SARS|HKU1|MERS|nCoV)
+- Whitelist: Host / off-target sequences
+- Guides: predicted gRNA
+- Alignments: Clustal Multiple Sequence Alignments
+- Parts: Sequences to include in plasmids
 
 ## Problem: Covid-19 Outbreak
 
@@ -53,6 +68,7 @@
 - NCBI Virus
 - EMBL EMBOSS CONS Consensus
 - Clustal Omega
+- UCSC Genome Browser
 - Freije CA, et al. Programmable inhibition and detection of RNA viruses using Cas13. Mol Cell. 2019. https://doi.org/10.1016/j.molcel.2019.09.013.
 - Tips and Tricks for Cas13 https://zlab.bio/cas13
 - pC0046-EF1a-PspCas13b-NES-HIV https://www.addgene.org/103862/
