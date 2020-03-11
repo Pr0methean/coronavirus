@@ -5,7 +5,7 @@
 ## NOTE: Please help find a lab to run in vitro tests on this! Forward this page to anyone who might have a capable lab
 ## Contact: Bion Howard - bion@bitpharma.com - +1 843 830 2918
 
-![CRISPR-Cas13 is an RNA-guided RNA interference system](https://github.com/bionicles/coronavirus/cas13.jpeg)
+![CRISPR-Cas13 is an RNA-guided RNA interference system](https://github.com/bionicles/coronavirus/blob/master/cas13.jpeg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 - STATUS: Minimum Viable Product - Work in Progress - Ready for Peer Review
