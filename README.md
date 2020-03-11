@@ -9,7 +9,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 - STATUS: Minimum Viable Product - Work in Progress - Ready for Peer Review
-- NEXT: Design Plasmids with Promoters (PDPN, Sp1, Sp3, TTF-1, HNF-3α)
+- NEXT: Design Plasmids with Promoters ([PDPN](https://epd.epfl.ch//cgi-bin/get_doc?db=hgEpdNew&format=genome&entry=PDPN_1), Sp1, Sp3, TTF-1, HNF-3α)
 
 ## Usage
 ```
