@@ -37,7 +37,7 @@ python design-guides.py
 
 - delete coronavirus genome conserved sequences with CRISPR-Cas13 RNA-guided RNA-knockdown
 - deliver with inhalers of nanoparticles / adenovirus (non-replicating)
-- express therapy only in lung cells with surfactant promoter
+- express therapy only in type 1 pneumocytes with podoplanin promoter
 
 ## Prepare
 
