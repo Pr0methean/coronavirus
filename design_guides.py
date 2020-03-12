@@ -15,6 +15,9 @@ OFFSET_1, OFFSET_2 = 14, 20
 # path to the alignment file to find conserved kmers
 ALIGNMENT_PATH = os.path.join("alignments", "HKU1+MERS+SARS+nCoV-Consensus.clu")
 
+# fasta id for the specific subsequence of the alignment to target
+TARGET_ID = "nCoV"
+
 # redis key for the set of whitelist (host/off-target) kmers
 whitelist_key = "whitelist:lung:cds"
 
@@ -64,15 +67,23 @@ def makeWhitelist():
         r.sadd(whitelist_key, str(kmer))
 
 def find_conserved_target_kmers():
-  alignment = Bio.AlignIO.read(ALIGNMENT_PATH, "clustal")
-  conserved = [1 if all_equal(alignment[i]) else 0 for i in range(len(alignment))]
-  for start in range(len(alignment)):
+  alignment = AlignIO.read(ALIGNMENT_PATH, "clustal")
+  sequence_ids = [seq.id for seq in alignment]
+  print("alignment of", sequence_ids)
+  index_of_target = sequence_ids.index(TARGET_ID)
+  alignment_length = alignment.get_alignment_length()
+  conserved = [1 if all_equal([seq[i] for seq in alignment]) else 0 for i in range(alignment_length)] 
+  for start in range(alignment_length - K):
     if not all(conserved[start + OFFSET_1:start + OFFSET_2]):
       continue 
-    kmer = alignment[target_fasta_name][start:start+K]
+    kmer = str(alignment[index_of_target][start:start+K].seq).lower()
+    if "-" in kmer:
+      continue
     n_conserved = sum(conserved[start:start+K])
-    print(start, kmer, n_conserved)
-    r.zadd("conserved_target_kmers", n_conserved, kmer)
+    print(f"{start}:{start+K}", kmer, n_conserved)
+    r.zadd("conserved_target_kmers", {kmer: n_conserved})
+  most_conserved_kmer = r.zrevrangebyscore("conserved_target_kmers", 9001, 0, withscores=True, start=0, num=1)[0]
+  print(f"the most conserved {K}mer is {most_conserved_kmer[0].decode()} with {int(most_conserved_kmer[1])} bases conserved between {sequence_ids}")
 
 def design_guides():
   ncov_consensus = read_fasta(FASTA_PATH)
@@ -91,7 +102,7 @@ def design_guides():
     outfile.write("\n".join(list(guides)))
 
 if __name__ == "__main__":
-  # makeWhitelist() # docker run -p 6379:6379 -d redis redis-server --appendonly yes
+  # makeWhitelist()
   # design_guides()
   find_conserved_target_kmers()
 
