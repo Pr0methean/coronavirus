@@ -39,6 +39,8 @@ python design-guides.py
 - deliver with inhalers of nanoparticles / adenovirus (non-replicating)
 - express therapy only in type 1 pneumocytes with podoplanin promoter
 
+![Two different plasmid design options](https://github.com/bionicles/coronavirus/blob/master/crispr-plasmid-options.png)
+
 ## Prepare
 
 - install clustal omega 
