@@ -80,10 +80,11 @@ def find_conserved_target_kmers():
     if "-" in kmer:
       continue
     n_conserved = sum(conserved[start:start+K])
-    print(f"{start}:{start+K}", kmer, n_conserved)
+    print(f"{kmer} at {start}:{start+K} has {int(n_conserved)} conserved bases")
     r.zadd("conserved_target_kmers", {kmer: n_conserved})
   most_conserved_kmer = r.zrevrangebyscore("conserved_target_kmers", 9001, 0, withscores=True, start=0, num=1)[0]
   print(f"the most conserved {K}mer is {most_conserved_kmer[0].decode()} with {int(most_conserved_kmer[1])} bases conserved between {sequence_ids}")
+  return most_conserved_kmer[0].decode()
 
 def design_guides():
   ncov_consensus = read_fasta(FASTA_PATH)
