@@ -1,8 +1,5 @@
-# conda create --name bio python=3.7.1 biopython redis
-# conda activate bio
-
+from Bio import AlignIO, SeqIO
 from Bio.Seq import Seq
-from Bio import SeqIO
 import itertools
 import redis
 import os
@@ -10,7 +7,13 @@ import os
 r = redis.Redis(host='localhost', port=6379)
 
 # length of the guide RNA for CRISPR Cas13
-K = 30
+K = 28
+
+# bases 15-21 of Cas13 gRNA don't tolerate mismatch (Wessels et al 2019)
+OFFSET_1, OFFSET_2 = 14, 20
+
+# path to the alignment file to find conserved kmers
+ALIGNMENT_PATH = os.path.join("alignments", "HKU1+MERS+SARS+nCoV-Consensus.clu")
 
 # redis key for the set of whitelist (host/off-target) kmers
 whitelist_key = "whitelist:lung:cds"
@@ -43,6 +46,9 @@ CONSERVED = [
 ]
 
 # helper functions
+def all_equal(arr):
+  return arr.count(arr[0]) == len(arr)
+
 def read_fasta(fasta_path):
   record = SeqIO.read(fasta_path, "fasta")
   return record.seq.lower()
@@ -56,6 +62,17 @@ def makeWhitelist():
     for record in SeqIO.parse(whitelist_file, "fasta"):
       for kmer in getKmers(record.seq.lower(), K, 1):
         r.sadd(whitelist_key, str(kmer))
+
+def find_conserved_target_kmers():
+  alignment = Bio.AlignIO.read(ALIGNMENT_PATH, "clustal")
+  conserved = [1 if all_equal(alignment[i]) else 0 for i in range(len(alignment))]
+  for start in range(len(alignment)):
+    if not all(conserved[start + OFFSET_1:start + OFFSET_2]):
+      continue 
+    kmer = alignment[target_fasta_name][start:start+K]
+    n_conserved = sum(conserved[start:start+K])
+    print(start, kmer, n_conserved)
+    r.zadd("conserved_target_kmers", n_conserved, kmer)
 
 def design_guides():
   ncov_consensus = read_fasta(FASTA_PATH)
@@ -75,7 +92,9 @@ def design_guides():
 
 if __name__ == "__main__":
   # makeWhitelist() # docker run -p 6379:6379 -d redis redis-server --appendonly yes
-  design_guides()
+  # design_guides()
+  find_conserved_target_kmers()
+
 
 
 # non-watson-crick base pair map (cDNA right now) NOTE: this was a combinatorial shit-show and took too long

@@ -13,7 +13,10 @@
 
 ## Usage
 ```
-docker run -p 6379:6379 -d redis redis-server --appendonly yes
+conda create --name bio python=3.8 biopython redis
+conda activate bio
+[sudo] docker run -p 6379:6379 -d redis redis-server --appendonly yes
+
 python design-guides.py
 ```
 
