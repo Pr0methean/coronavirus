@@ -81,3 +81,9 @@ python design-guides.py
 - Glasser SW, Burhans MS, Eszterhas SK, Bruno MD, Korfhagen TR. Human SP-C gene sequences that confer lung epithelium-specific expression in transgenic mice. Am J Physiol Lung Cell Mol Physiol. 2000;278(5):L933–L945. doi:10.1152/ajplung.2000.278.5.L933
 - Vanderbilt JN, Gonzalez RF, Allen L, et al. High-efficiency type II cell-enhanced green fluorescent protein expression facilitates cellular identification, tracking, and isolation. Am J Respir Cell Mol Biol. 2015;53(1):14–21. doi:10.1165/rcmb.2014-0348MA "
 - Flodby, P., Borok, Z., Banfalvi, A., Zhou, B., Gao, D., Minoo, P., ... & Crandall, E. D. (2010). Directed expression of Cre in alveolar epithelial type 1 cells. American journal of respiratory cell and molecular biology, 43(2), 173-178.
+- Redis.io
+- APE (A Plasmid Editor)
+- igem.org
+- LibreOffice Draw
+- Ubuntu 18.04
+- Eukaryotic Promoter Database - https://epd.epfl.ch
