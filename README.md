@@ -70,6 +70,11 @@ python design-guides.py
 - since I couldn't whitelist the whole transcriptome, the lung microRNA and long non-coding RNA aren't in the whitelist, which presents an opportunity for off target effects
 - likewise, I'm not using Levenshtein distance for whitelist cache hits, only exact matches, and there weren't any. That might be a false negative because guides could tolerate some mispairing, and wobble pairing, but I wanted to produce results and then improve it later
 
+## Troubleshoot
+
+- redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
+    - check Redis is running
+
 ## References
 
 - BLASTN Suite
@@ -92,3 +97,7 @@ python design-guides.py
 - LibreOffice Draw
 - Ubuntu 18.04
 - Eukaryotic Promoter Database - https://epd.epfl.ch
+- David B. T. Cox, Jonathan S. Gootenberg, Omar O. Abudayyeh, Brian Franklin, Max J. Kellner, Julia Joung, Feng Zhang.RNA editing with CRISPR-Cas13. Science, 24 Nov 2017 : 1019-1027 
+- Ferry, Q., Lyutova, R. & Fulga, T. Rational design of inducible CRISPR guide RNAs for de novo assembly of transcriptional programs. Nat Commun 8, 14633 (2017). https://doi.org/10.1038/ncomms14633
+- https://www.salk.edu/wp-content/uploads/2018/05/CasRx-marketing-summary-S2017-0221.pdf
+- What is the reason for using U6 promoter for shRNA vectors? can we replace it with cmv promoter ( for shRNA without flanking by mir30)? https://www.researchgate.net/post/What_is_the_reason_for_using_U6_promoter_for_shRNA_vectors_can_we_replace_it_with_cmv_promoter_for_shRNA_without_flanking_by_mir30

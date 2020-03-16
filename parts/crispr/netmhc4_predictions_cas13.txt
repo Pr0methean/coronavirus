@@ -1,0 +1,35 @@
+cat parts/crispr/netmhc4_cas13b.txt | grep SB | awk '{ print $3 }' > netmhc4_predictions_cas13.txt
+
+LIMKHFPFL
+SLLKNMYKV
+TIAGLLFFV
+LLFFVSLFL
+MQLDMLNEL
+FTAEAFLSV
+LLPMMFYYL
+MMFYYLLLT
+LMFKELFNM
+RIMPMKLPV
+SIFEMTLGL
+KLIDKYSTL
+
+-- weak binders below --
+~/hax/coronavirus $ cat parts/crispr/netmhc4_cas13b.txt | grep WB | awk '{ print $3 }' >> parts/crispr/netmhc4_predictions_cas13.txt
+
+AIFAFPKYI
+FAFPKYITI
+FLNLARHNV
+FLEAAAYEM
+VLFIFLEKL
+FIFLEKLQV
+KVFDANVRL
+QLDMLNELV
+HQDRFPYFV
+PMMFYYLLL
+RMLQRALAL
+ILSFYRNYL
+YQHFLILKV
+RLNGLFSFA
+GLFSFAETT
+KLSVDLELI
+PMYDATLFA
