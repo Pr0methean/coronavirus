@@ -1,8 +1,8 @@
-# Hack Coronavirus with Synthetic Biology
+# We believe biotech can do better!
 # Covid-19 treatment should be safe, effective, and efficient
 # Algorithms + Data to Attack Covid-19 Genome with CRISPR
 
-## NOTE: Please help find a lab to run in vitro tests on this! Forward this page to anyone who might have a capable lab
+## NOTE: Please help find a lab to test this! Forward this anyone who may have a capable lab
 ## Contact: Bion Howard - bion@bitpharma.com - +1 843 830 2918
 
 ![CRISPR-Cas13 is an RNA-guided RNA interference system](https://github.com/bionicles/coronavirus/blob/master/cas13.jpeg)

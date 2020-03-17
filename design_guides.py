@@ -60,8 +60,8 @@ def make_targets():
     if "-" in kmer:
       continue
     n_conserved = sum(conserved[start:start+K])
-    print(f"{kmer} at {start}:{start+K} has {int(n_conserved)} conserved bases")
-    r.zadd("conserved_target_kmers", {kmer: n_conserved})
+    print(f"{kmer} at {start} has {int(n_conserved)} conserved bases")
+    r.zadd("targets", {kmer: n_conserved})
   most_conserved_kmer = r.zrevrangebyscore("targets", 9001, 0, withscores=True, start=0, num=1)[0]
   print(f"the most conserved {K}mer is {most_conserved_kmer[0].decode()} with {int(most_conserved_kmer[1])} bases conserved between {sequence_ids}")
 
@@ -71,7 +71,9 @@ def predict_side_effects():
   for target in targets:
     for host in hosts:
       d = sum([0 if target[n] is host[n] else 1 for n in range(K)])
+      print(f"d({target.decode()}, {host.decode()}) = {d}")
       if d < CUTOFF:
+        print("found potential mismatch:", target.decode(), host.decode())
         break
     print("no side effects found for: ", target)
     r.zadd("good_targets", {target: r.zscore("targets", target)})
@@ -81,10 +83,10 @@ def save_results():
     outfile.write("\n".join(list(guides)))
 
 if __name__ == "__main__":
-  make_hosts()
-  make_targets()
+  # make_hosts()
+  # make_targets()
   predict_side_effects()
-  make_plasmids()
+  # make_plasmids()
 
 # def make_plasmids():
 #   pol3_promoter = read_fasta(PROMOTER_PATH)
