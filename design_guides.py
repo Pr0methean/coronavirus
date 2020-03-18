@@ -95,9 +95,29 @@ def predict_side_effects():
         r.zadd("good_targets", {target: r.zscore("targets", target)})
 
 
-def save_results():
-    with open(OUTFILE_PATH, "w+") as outfile:
-        outfile.write("\n".join(list(guides)))
+# def save_results():
+#    with open(OUTFILE_PATH, "w+") as outfile:
+#        outfile.write("\n".join(list(guides)))
+
+
+def calculate_score(target):
+    # todo
+    return 0
+
+
+def make_plasmids():
+    pol3_promoter = read_fasta(PROMOTER_PATH)
+    dr_sequence = read_fasta(DR_SEQUENCE_PATH)
+    # tail = read_fasta(TAIL_PATH)
+    good_targets = r.zrevrangebyscore("good_targets", 9001, 0)
+    timestamp = datetime.now()
+    for i, target in enumerate(good_targets):
+        guide = target.reverse_complement()
+        score = calculate_score(target)
+        title = f"{i}_{guide}_{score}_{timestamp}"
+        transcripts = [pol3_promoter, guide, dr_sequence]
+        plasmid = "".join(transcripts)
+        write_fasta(title, plasmid)
 
 
 def make_plasmids():
