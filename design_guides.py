@@ -4,8 +4,6 @@ import itertools
 import redis
 import os
 
-r = redis.Redis(host='localhost', port=6379)
-
 # length of the CRISPR guide RNA
 K = 28
 # path to a fasta file with host sequences to avoid
@@ -25,9 +23,10 @@ TAIL_PATH = os.path.join("parts", "tail.fa")
 OUTFILE_PATH = os.path.join(
     "guides", "SARS-nCoV-2_consensus_conserved_watson_crick_guides_RNA.csv")
 
-# helper functions
+r = redis.Redis(host='localhost', port=6379)
+trie = {}
 
-
+# helpers
 def all_equal(arr):
     return arr.count(arr[0]) == len(arr)
 
@@ -42,6 +41,39 @@ def getKmers(sequence, k, step):
         yield sequence[x:x+k]
 
 
+def index(kmer):
+	node = trie
+	for base in kmer:
+	    if base not in node:
+	        node[base] = {}
+	    node = node[base]
+
+def _find(node, path, kmer, d):
+	if not kmer:
+	    if len(path) is K:
+	        yield (path, d)
+	    return
+	base, suffix = kmer[0], kmer[1:]
+	for key in node:
+	    step = 1 if key is not base else 0
+	    if d + step > CUTOFF:
+	        return
+	    for result in _find(node[key], path + key, suffix, d + step):
+	        yield result
+
+
+def find(kmer):
+	return _find(trie, "", kmer, 0)
+
+
+def host_has(kmer):
+	matches = list(find(kmer))
+	should_avoid = len(matches) > 0
+	notice = "avoid" if should_avoid else "allow"
+	print(notice, kmer, "matches", matches)
+	return should_avoid
+
+# TODO: rewrite with "index" function
 def make_hosts():
     rcount, kcount = 0, 0
     with open(HOST_PATH, "r") as host_file:
@@ -75,6 +107,7 @@ def make_targets():
         f"the most conserved {K}mer is {most_conserved_kmer[0].decode()} with {int(most_conserved_kmer[1])} bases conserved between {sequence_ids}")
 
 
+# TODO: rewrite with "host_has" function
 def predict_side_effects():
     targets = r.zrevrangebyscore("targets", 9001, 0)
     hosts = r.smembers("hosts")
