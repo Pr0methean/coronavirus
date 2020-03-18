@@ -1,3 +1,4 @@
 human_transcriptome.fna
 .DS_Store
+trie.pkl
 /venv/
