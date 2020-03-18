@@ -1,14 +1,20 @@
 from Bio import AlignIO, SeqIO
+from datetime import datetime
 from Bio.Seq import Seq
 import itertools
+import pickle
 import redis
 import os
-from datetime import datetime
 
 # length of the CRISPR guide RNA
 K = 28
 # path to a fasta file with host sequences to avoid
 HOST_PATH = os.path.join("host", "lung-tissue-gene-cds.fa")
+# ending token for tries
+END = "*"
+# path to pickle / save the trie
+LOAD_PICKLE = True
+TRIE_PATH = "trie.pkl"
 # path to alignment and id for the sequence to delete
 TARGET_PATH = os.path.join("alignments", "HKU1+MERS+SARS+nCoV-Consensus.clu")
 TARGET_ID = "nCoV"
@@ -21,11 +27,10 @@ PROMOTER_PATH = os.path.join("parts", "pdpn_1_promoter.fa")
 DR_SEQUENCE_PATH = os.path.join("parts", "crispr", "dr_sequence_bz_short.fa")
 TAIL_PATH = os.path.join("parts", "tail.fa")
 # path for output
-OUTFILE_PATH = os.path.join(
-    "guides", "SARS-nCoV-2_consensus_conserved_watson_crick_guides_RNA.csv")
+OUTFILE_PATH = os.path.join("guides", "trie_guides.csv")
 
 r = redis.Redis(host='localhost', port=6379)
-trie = {}
+trie = {} if not LOAD_PICKLE else pickle.load(open(TRIE_PATH, "rb"))
 
 
 # helpers
@@ -53,6 +58,7 @@ def index(kmer, haystack=trie):
         if base not in node:
             node[base] = {}
         node = node[base]
+    node[END] = END
 
 
 def _find(node, path, kmer, d):
@@ -97,6 +103,26 @@ def make_targets(input_path=TARGET_PATH, target_id=TARGET_ID, db=r):
     alignment = AlignIO.read(input_path, "clustal")
     sequence_ids = [seq.id for seq in alignment]
     index_of_target = sequence_ids.index(target_id)
+
+
+def make_hosts():
+    if LOAD_PICKLE:
+        return
+    with open(HOST_PATH, "r") as host_file:
+        for rcount, record in enumerate(SeqIO.parse(host_file, "fasta")):
+            for kcount, kmer in enumerate(getKmers(record.seq.lower(), K, 1)):
+                kmer_string = str(kmer)
+                print(rcount, kcount, kmer_string)
+                r.sadd("hosts", kmer_string)
+                index(kmer_string)
+    with open(TRIE_PATH, "wb+") as trie_file:
+        pickle.dump(trie, trie_file)
+
+
+def make_targets():
+    alignment = AlignIO.read(TARGET_PATH, "clustal")
+    seq_ids = [seq.id for seq in alignment]
+    index_of_target = seq_ids.index(TARGET_ID)
     alignment_length = alignment.get_alignment_length()
     conserved = [1 if all_equal(
         [seq[i] for seq in alignment]) else 0 for i in range(alignment_length)]
@@ -109,26 +135,26 @@ def make_targets(input_path=TARGET_PATH, target_id=TARGET_ID, db=r):
         n_conserved = sum(conserved[start:start + K])
         print(f"{kmer} at {start} has {int(n_conserved)} conserved bases")
         db.zadd("targets", {kmer: n_conserved})
-    most_conserved_kmer = db.zrevrangebyscore(
-        "targets", 9001, 0, withscores=True, start=0, num=1)[0]
+    most = r.zrevrangebyscore("targets", 9001, 0, withscores=True, start=0, num=1)[0]
     print(
-        f"the most conserved {K}mer is {most_conserved_kmer[0].decode()} with {int(most_conserved_kmer[1])} bases conserved between {sequence_ids}")
+        f"the most conserved {K}mer {most[0].decode()} has {int(most[1])} bases conserved in {seq_ids}")
 
 
 # TODO: rewrite with "host_has" function
 def predict_side_effects(db=r):
     targets = db.zrevrangebyscore("targets", 9001, 0)
-    hosts = db.smembers("hosts")
     for target in targets:
-        for host in hosts:
-            d = sum([0 if target[n] is host[n] else 1 for n in range(K)])
-            print(f"d({target.decode()}, {host.decode()}) = {d}")
-            if d < CUTOFF:
-                print("found potential mismatch:",
-                      target.decode(), host.decode())
-                break
-        print("no side effects found for: ", target)
-        db.zadd("good_targets", {target: db.zscore("targets", target)})
+        t = target.decode()
+        should_avoid = host_has(t)
+        if should_avoid:
+            continue
+        db.zadd("good_targets", {target: db.zscore("targets", t)})
+    with open(OUTFILE_PATH, "w+") as outfile:
+        for k, good_target in enumerate(r.zrevrangebyscore("good_targets", 90, 0)):
+            good_target_string = good_target.decode()
+            print("good target", k, good_target_string)
+            outfile.write(good_target_string + "\n")
+    print(f"saved {db.zcard('good_targets')} good targets at {OUTFILE_PATH}")
 
 
 def make_plasmids(prefix_path=PROMOTER_PATH, suffix_path=DR_SEQUENCE_PATH, db=r):
@@ -147,7 +173,9 @@ def make_plasmids(prefix_path=PROMOTER_PATH, suffix_path=DR_SEQUENCE_PATH, db=r)
 
 
 if __name__ == "__main__":
-    # make_hosts()
-    # make_targets()
-    # predict_side_effects()
-    make_plasmids()
+    make_hosts()
+    # test the trie lookup works
+    for i in range(5):
+        host_has(r.srandmember("hosts").decode())
+    make_targets()
+    predict_side_effects()
