@@ -5,7 +5,7 @@
 ## NOTE: Please help find a lab to test this! Forward this anyone who may have a capable lab
 ## Contact: Bion Howard - bion@bitpharma.com - +1 843 830 2918
 
-![CRISPR-Cas13 is an RNA-guided RNA interference system](https://github.com/bionicles/coronavirus/blob/master/cas13.jpeg)
+![CRISPR-Cas13 is an RNA-guided RNA interference system](https://github.com/bionicles/coronavirus/blob/master/diagrams/cas13.jpeg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 - STATUS: Minimum Viable Product - Work in Progress - Ready for Peer Review
@@ -42,7 +42,7 @@ python design-guides.py
 - deliver with inhalers of nanoparticles / adenovirus (non-replicating)
 - express therapy only in type 1 pneumocytes with podoplanin promoter
 
-![Two different plasmid design options](https://github.com/bionicles/coronavirus/blob/master/crispr-plasmid-options.png)
+![Two different plasmid design options](https://github.com/bionicles/coronavirus/blob/master/diagrams/crispr-plasmid-options.png)
 
 ## Prepare
 
