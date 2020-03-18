@@ -102,11 +102,6 @@ def predict_side_effects():
 #        outfile.write("\n".join(list(guides)))
 
 
-def calculate_score(target):
-    # todo
-    return 0
-
-
 def make_plasmids():
     pol3_promoter = read_fasta(PROMOTER_PATH)
     dr_sequence = read_fasta(DR_SEQUENCE_PATH)
@@ -115,7 +110,7 @@ def make_plasmids():
     timestamp = datetime.now()
     for i, target in enumerate(good_targets):
         guide = target.reverse_complement()
-        score = calculate_score(target)
+        score = r.zscore(target)
         title = f"{i}_{guide}_{score}_{timestamp}"
         transcripts = [pol3_promoter, guide, dr_sequence]
         plasmid = "".join(transcripts)
