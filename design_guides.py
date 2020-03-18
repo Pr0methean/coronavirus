@@ -3,6 +3,8 @@ from Bio.Seq import Seq
 import itertools
 import redis
 import os
+from datetime import datetime
+from multiprocessing import Pool
 
 r = redis.Redis(host='localhost', port=6379)
 
@@ -31,8 +33,12 @@ def all_equal(arr):
 
 
 def read_fasta(fasta_path):
-    record = SeqIO.read(fasta_path, "fasta")
+    record = SeqIO.read(handle=fasta_path, format="fasta")
     return record.seq.lower()
+
+
+def write_fasta(fasta_path, sequences):
+    SeqIO.write(sequences=sequences, handle=fasta_path, format="fasta")
 
 
 def getKmers(sequence, k, step):
@@ -46,10 +52,13 @@ def handle_host_record(record):
 
 
 def make_hosts():
+    rcount, kcount = 0, 0
     with open(HOST_PATH, "r") as host_file:
         for record in SeqIO.parse(host_file, "fasta"):
+            rcount = rcount + 1
             for kmer in getKmers(record.seq.lower(), K, 1):
-                print(count, kmer)
+                kcount = kcount + 1
+                print(rcount, kcount, kmer)
                 r.sadd("hosts", str(kmer))
 
 
@@ -87,25 +96,34 @@ def predict_side_effects():
         r.zadd("good_targets", {target: r.zscore("targets", target)})
 
 
-def save_results():
-    with open(OUTFILE_PATH, "w+") as outfile:
-        outfile.write("\n".join(list(guides)))
+# def save_results():
+#    with open(OUTFILE_PATH, "w+") as outfile:
+#        outfile.write("\n".join(list(guides)))
+
+
+def calculate_score(target):
+    # todo
+    return 0
+
+
+def make_plasmids():
+    pol3_promoter = read_fasta(PROMOTER_PATH)
+    dr_sequence = read_fasta(DR_SEQUENCE_PATH)
+    # tail = read_fasta(TAIL_PATH)
+    good_targets = r.zrevrangebyscore("good_targets", 9001, 0)
+    timestamp = datetime.now()
+    for i, target in enumerate(good_targets):
+        guide = target.reverse_complement()
+        score = calculate_score(target)
+        title = f"{i}_{guide}_{score}_{timestamp}"
+        transcripts = [pol3_promoter, guide, dr_sequence]
+        plasmid = "".join(transcripts)
+        write_fasta(title, plasmid)
 
 
 if __name__ == "__main__":
     # make_hosts()
     # make_targets()
-    predict_side_effects()
-    # make_plasmids()
+    # predict_side_effects()
+    make_plasmids()
 
-# def make_plasmids():
-#   pol3_promoter = read_fasta(PROMOTER_PATH)
-#   dr_sequence = read_fasta(DR_SEQUENCE_PATH)
-#   tail = read_fasta(TAIL_PATH)
-#   good_targets = r.zrevrangebyscore("good_targets", 9001, 0))
-#   for i, target in enumerate(good_targets):
-#     title = f"{i}_{guide}_{score}_{timestamp}"
-#     guide = target.reverse_complement()
-#     transcripts = [pol3_promoter, guide, dr_sequence]
-#     plasmid = "".join(transcripts)
-#     write_fasta(title, plasmid)
