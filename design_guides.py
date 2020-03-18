@@ -4,7 +4,6 @@ import itertools
 import redis
 import os
 from datetime import datetime
-from multiprocessing import Pool
 
 r = redis.Redis(host='localhost', port=6379)
 
@@ -77,7 +76,6 @@ def make_targets():
         n_conserved = sum(conserved[start:start + K])
         print(f"{kmer} at {start} has {int(n_conserved)} conserved bases")
         r.zadd("targets", {kmer: n_conserved})
-        r.set(f"{kmer}:start", start)
     most_conserved_kmer = r.zrevrangebyscore("targets", 9001, 0, withscores=True, start=0, num=1)[0]
     print(
         f"the most conserved {K}mer is {most_conserved_kmer[0].decode()} with {int(most_conserved_kmer[1])} bases conserved between {sequence_ids}")
@@ -97,9 +95,9 @@ def predict_side_effects():
         r.zadd("good_targets", {target: r.zscore("targets", target)})
 
 
-# def save_results():
-#    with open(OUTFILE_PATH, "w+") as outfile:
-#        outfile.write("\n".join(list(guides)))
+def save_results():
+    with open(OUTFILE_PATH, "w+") as outfile:
+        outfile.write("\n".join(list(guides)))
 
 
 def make_plasmids():
