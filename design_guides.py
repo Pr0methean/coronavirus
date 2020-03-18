@@ -95,8 +95,8 @@ def make_hosts(input_path=HOST_PATH, db=r):
             rcount = rcount + 1
             for kmer in getKmers(record.seq.lower(), K, 1):
                 kcount = kcount + 1
-                print(rcount, kcount, kmer)
                 db.sadd("hosts", str(kmer))
+            print(rcount + " values processed")
 
 
 def make_targets(input_path=TARGET_PATH, target_id=TARGET_ID, db=r):
@@ -112,14 +112,14 @@ def make_hosts():
         for rcount, record in enumerate(SeqIO.parse(host_file, "fasta")):
             for kcount, kmer in enumerate(getKmers(record.seq.lower(), K, 1)):
                 kmer_string = str(kmer)
-                print(rcount, kcount, kmer_string)
                 r.sadd("hosts", kmer_string)
                 index(kmer_string)
+            print("Records processed:", rcount)
     with open(TRIE_PATH, "wb+") as trie_file:
         pickle.dump(trie, trie_file)
 
 
-def make_targets():
+def make_targets(db=r):
     alignment = AlignIO.read(TARGET_PATH, "clustal")
     seq_ids = [seq.id for seq in alignment]
     index_of_target = seq_ids.index(TARGET_ID)
@@ -135,7 +135,7 @@ def make_targets():
         n_conserved = sum(conserved[start:start + K])
         print(f"{kmer} at {start} has {int(n_conserved)} conserved bases")
         db.zadd("targets", {kmer: n_conserved})
-    most = r.zrevrangebyscore("targets", 9001, 0, withscores=True, start=0, num=1)[0]
+    most = db.zrevrangebyscore("targets", 9001, 0, withscores=True, start=0, num=1)[0]
     print(
         f"the most conserved {K}mer {most[0].decode()} has {int(most[1])} bases conserved in {seq_ids}")
 
