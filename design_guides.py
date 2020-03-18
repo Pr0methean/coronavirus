@@ -41,10 +41,13 @@ def handle_host_record(record):
     r.sadd("hosts", str(kmer))
 
 def make_hosts():
+  rcount, kcount = 0, 0
   with open(HOST_PATH, "r") as host_file:
     for record in SeqIO.parse(host_file, "fasta"):
+      rcount = rcount + 1
       for kmer in getKmers(record.seq.lower(), K, 1):
-        print(count, kmer)
+        kcount = kcount + 1
+        print(rcount, kcount, kmer)
         r.sadd("hosts", str(kmer))
 
 def make_targets():
