@@ -47,8 +47,8 @@ def getKmers(sequence, k, step):
         yield sequence[x:x + k]
 
 
-def index(kmer):
-    node = trie
+def index(kmer, haystack=trie):
+    node = haystack
     for base in kmer:
         if base not in node:
             node[base] = {}
@@ -69,8 +69,8 @@ def _find(node, path, kmer, d):
             yield result
 
 
-def find(kmer):
-    return _find(trie, "", kmer, 0)
+def find(kmer, haystack=trie):
+    return _find(haystack, "", kmer, 0)
 
 
 def host_has(kmer):
