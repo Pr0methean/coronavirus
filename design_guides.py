@@ -27,6 +27,7 @@ OUTFILE_PATH = os.path.join(
 r = redis.Redis(host='localhost', port=6379)
 trie = {}
 
+
 # helpers
 def all_equal(arr):
     return arr.count(arr[0]) == len(arr)
@@ -43,40 +44,42 @@ def write_fasta(fasta_path, sequences):
 
 def getKmers(sequence, k, step):
     for x in range(0, len(sequence) - k, step):
-        yield sequence[x:x+k]
+        yield sequence[x:x + k]
 
 
 def index(kmer):
-	node = trie
-	for base in kmer:
-	    if base not in node:
-	        node[base] = {}
-	    node = node[base]
+    node = trie
+    for base in kmer:
+        if base not in node:
+            node[base] = {}
+        node = node[base]
+
 
 def _find(node, path, kmer, d):
-	if not kmer:
-	    if len(path) is K:
-	        yield (path, d)
-	    return
-	base, suffix = kmer[0], kmer[1:]
-	for key in node:
-	    step = 1 if key is not base else 0
-	    if d + step > CUTOFF:
-	        return
-	    for result in _find(node[key], path + key, suffix, d + step):
-	        yield result
+    if not kmer:
+        if len(path) is K:
+            yield (path, d)
+        return
+    base, suffix = kmer[0], kmer[1:]
+    for key in node:
+        step = 1 if key is not base else 0
+        if d + step > CUTOFF:
+            return
+        for result in _find(node[key], path + key, suffix, d + step):
+            yield result
 
 
 def find(kmer):
-	return _find(trie, "", kmer, 0)
+    return _find(trie, "", kmer, 0)
 
 
 def host_has(kmer):
-	matches = list(find(kmer))
-	should_avoid = len(matches) > 0
-	notice = "avoid" if should_avoid else "allow"
-	print(notice, kmer, "matches", matches)
-	return should_avoid
+    matches = list(find(kmer))
+    should_avoid = len(matches) > 0
+    notice = "avoid" if should_avoid else "allow"
+    print(notice, kmer, "matches", matches)
+    return should_avoid
+
 
 # TODO: rewrite with "index" function
 def make_hosts(input_path=HOST_PATH, db=r):
@@ -100,10 +103,10 @@ def make_targets(input_path=TARGET_PATH, target_id=TARGET_ID, db=r):
     for start in range(alignment_length - K):
         if not all(conserved[start + OFFSET_1:start + OFFSET_2]):
             continue
-        kmer = str(alignment[index_of_target][start:start+K].seq).lower()
+        kmer = str(alignment[index_of_target][start:start + K].seq).lower()
         if "-" in kmer:
             continue
-        n_conserved = sum(conserved[start:start+K])
+        n_conserved = sum(conserved[start:start + K])
         print(f"{kmer} at {start} has {int(n_conserved)} conserved bases")
         db.zadd("targets", {kmer: n_conserved})
     most_conserved_kmer = db.zrevrangebyscore(
@@ -148,4 +151,3 @@ if __name__ == "__main__":
     # make_targets()
     # predict_side_effects()
     make_plasmids()
-
