@@ -1,20 +1,24 @@
+from multiprocessing import Pool
 from Bio import AlignIO, SeqIO
 from datetime import datetime
 from Bio.Seq import Seq
 import itertools
 import pickle
+import shelve
 import redis
 import os
 
 # length of the CRISPR guide RNA
 K = 28
 # path to a fasta file with host sequences to avoid
-HOST_PATH = os.path.join("host", "lung-tissue-gene-cds.fa")
+HOST_FILE = "GCF_000001405.39_GRCh38.p13_rna.fna" # all RNA in human transcriptome
+# HOST_FILE = "lung-tissue-gene-cds.fa" # just lungs
+HOST_PATH = os.path.join("host", HOST_FILE)
 # ending token for tries
 END = "*"
 # path to pickle / save the trie
-LOAD_PICKLE = True
-TRIE_PATH = "trie.pkl"
+REBUILD_TRIE = True
+TRIE_PATH = "trie"
 # path to alignment and id for the sequence to delete
 TARGET_PATH = os.path.join("alignments", "HKU1+MERS+SARS+nCoV-Consensus.clu")
 TARGET_ID = "nCoV"
@@ -30,7 +34,9 @@ TAIL_PATH = os.path.join("parts", "tail.fa")
 OUTFILE_PATH = os.path.join("guides", "trie_guides.csv")
 
 r = redis.Redis(host='localhost', port=6379)
-trie = {} if not LOAD_PICKLE else pickle.load(open(TRIE_PATH, "rb"))
+
+# trie = shelve.open(TRIE_PATH)
+trie = {}
 
 
 # helpers
@@ -87,39 +93,20 @@ def host_has(kmer):
     return should_avoid
 
 
-# TODO: rewrite with "index" function
 def make_hosts(input_path=HOST_PATH, db=r):
-    rcount, kcount = 0, 0
-    with open(input_path, "r") as host_file:
-        for record in SeqIO.parse(host_file, "fasta"):
-            rcount = rcount + 1
+    if not REBUILD_TRIE:
+        return
+    trie.clear()
+    with open(HOST_PATH, "r") as host_file:
+        for rcount, record in enumerate(SeqIO.parse(host_file, "fasta")):
             for kmer in getKmers(record.seq.lower(), K, 1):
-                kcount = kcount + 1
-                print(rcount, kcount, kmer)
-                db.sadd("hosts", str(kmer))
+                kmer_string = str(kmer)
+                r.sadd("hosts", kmer_string)
+                index(kmer_string)
+            print(rcount)
 
 
 def make_targets(input_path=TARGET_PATH, target_id=TARGET_ID, db=r):
-    alignment = AlignIO.read(input_path, "clustal")
-    sequence_ids = [seq.id for seq in alignment]
-    index_of_target = sequence_ids.index(target_id)
-
-
-def make_hosts():
-    if LOAD_PICKLE:
-        return
-    with open(HOST_PATH, "r") as host_file:
-        for rcount, record in enumerate(SeqIO.parse(host_file, "fasta")):
-            for kcount, kmer in enumerate(getKmers(record.seq.lower(), K, 1)):
-                kmer_string = str(kmer)
-                print(rcount, kcount, kmer_string)
-                r.sadd("hosts", kmer_string)
-                index(kmer_string)
-    with open(TRIE_PATH, "wb+") as trie_file:
-        pickle.dump(trie, trie_file)
-
-
-def make_targets():
     alignment = AlignIO.read(TARGET_PATH, "clustal")
     seq_ids = [seq.id for seq in alignment]
     index_of_target = seq_ids.index(TARGET_ID)
@@ -140,7 +127,6 @@ def make_targets():
         f"the most conserved {K}mer {most[0].decode()} has {int(most[1])} bases conserved in {seq_ids}")
 
 
-# TODO: rewrite with "host_has" function
 def predict_side_effects(db=r):
     targets = db.zrevrangebyscore("targets", 9001, 0)
     for target in targets:
@@ -155,27 +141,12 @@ def predict_side_effects(db=r):
             print("good target", k, good_target_string)
             outfile.write(good_target_string + "\n")
     print(f"saved {db.zcard('good_targets')} good targets at {OUTFILE_PATH}")
-
-
-def make_plasmids(prefix_path=PROMOTER_PATH, suffix_path=DR_SEQUENCE_PATH, db=r):
-    prefix = read_fasta(prefix_path)
-    suffix = read_fasta(suffix_path)
-    # tail = read_fasta(TAIL_PATH)
-    good_targets = db.zrevrangebyscore("good_targets", 9001, 0)
-    timestamp = datetime.now()
-    for i, target in enumerate(good_targets):
-        guide = target.reverse_complement()
-        score = db.zscore(target)
-        title = f"{i}_{guide}_{score}_{timestamp}"
-        transcripts = [prefix, guide, suffix]
-        plasmid = "".join(transcripts)
-        write_fasta(title, plasmid)
-
+    
 
 if __name__ == "__main__":
     make_hosts()
     # test the trie lookup works
     for i in range(5):
         host_has(r.srandmember("hosts").decode())
-    make_targets()
-    predict_side_effects()
+    # make_targets()
+    # predict_side_effects()
