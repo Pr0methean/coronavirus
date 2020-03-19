@@ -8,12 +8,12 @@ from Bio.Seq import Seq
 class Test(TestCase):
     alignment = [SeqIO.SeqRecord(i) for i in [
         'ATTAAAGGTTTATCCCTTCCCAGGTAGCAAACCACCCAACTGTCGATCTCTTGTAGGTCTGTCCTCTAAA',
-        'CGAACTTGAAAATCTGTGTGCAGGTAGCTCGGCTCCATGCTGAGTGCACTCACGCAGTATAACTAATAAC',
-        'TAATTACGGTCGTCGACAGGCAGGTAGTAACTCGCCTATCTGCTGCAGGCTGCTTAGGGTTTCGTCCGTG',
-        'TTGCAGCGGATCACCAGCACCAGGTAGTTTCGTCCGGGTGTGACCGAAAGGTAAGAGGGAGACCCTTGTC',
+        'CGAACTTGAAAATCTGTGTGCAGGTAGCTCGGCTCCATGCTGTCGACACTCACGCAGTATAACTAATAAC',
+        'TAATTACGGTCGTCGACAGGCAGGTAGTAACTCGCCTATCTGTCGAAGGCTGCTTAGGGTTTCGTCCGTG',
+        'TTGCAGCGGATCACCAGCACCAGGTAGTTTCGTCCGGGTGTGTCGAAAAGGTAAGAGGGAGACCCTTGTC',
     ]]
     conserved = [int(i) for i in list(
-        '0000000100000100000011111110000000100000110000000000000010000010000000')]
+        '0000000100000100000011111110000000100000111111000000000010000010000000')]
 
     def test_make_hosts(self):
         self.fail()
@@ -31,8 +31,8 @@ class Test(TestCase):
         self.assertEqual(conserved_in_alignment(self.alignment, len(self.alignment[0])), self.conserved)
 
     def test_count_conserved(self):
-        # Does not have bases 15-21 conserved
-        self.assertEqual(count_conserved(self.alignment, self.conserved, 0, 0), ("", 0))
+        # Has bases 15-20 but not 21 conserved
+        self.assertEqual(count_conserved(self.alignment, self.conserved, 0, 26), ("", 0))
         # Has bases 15-21 conserved
         self.assertEqual(count_conserved(self.alignment, self.conserved, 0, 6),
                          ("ggtttatcccttcccaggtagcaaacca", 9))

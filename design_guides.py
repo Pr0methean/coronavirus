@@ -25,7 +25,7 @@ TARGET_ID = "nCoV"
 # mismatch cutoff (e.g. how close must two kmers be to bind?)
 CUTOFF = 2
 # bases 15-21 of Cas13 gRNA don't tolerate mismatch (Wessels et al 2019)
-OFFSET_1, OFFSET_2 = 14, 20
+OFFSET_1, OFFSET_2 = 14, 21
 # paths to plasmid part fasta files
 PROMOTER_PATH = os.path.join("parts", "pdpn_1_promoter.fa")
 DR_SEQUENCE_PATH = os.path.join("parts", "crispr", "dr_sequence_bz_short.fa")
