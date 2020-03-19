@@ -76,8 +76,8 @@ def _find(path, kmer, d, db, max_mismatches):
             yield (path, d)
         return
     base, suffix = kmer[0], kmer[1:]
-    for key in db.get(path):
-        step = 1 if key is not base else 0
+    for key in db.get(bytesu(path), bytes()):
+        step = 1 if key is not bytesu(base) else 0
         if d + step > max_mismatches:
             return
         for result in _find(path + key, suffix, d + step, db, max_mismatches):
