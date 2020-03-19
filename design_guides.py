@@ -85,8 +85,8 @@ def find(kmer, haystack=trie):
     return _find(haystack, "", kmer, 0)
 
 
-def host_has(kmer):
-    matches = list(find(kmer))
+def host_has(kmer, haystack=trie):
+    matches = list(find(kmer, haystack))
     should_avoid = len(matches) > 0
     notice = "avoid" if should_avoid else "allow"
     print(notice, kmer, "matches", matches)
@@ -97,34 +97,47 @@ def make_hosts(input_path=HOST_PATH, db=r):
     if not REBUILD_TRIE:
         return
     trie.clear()
-    with open(HOST_PATH, "r") as host_file:
+    with open(input_path, "r") as host_file:
         for rcount, record in enumerate(SeqIO.parse(host_file, "fasta")):
             for kmer in getKmers(record.seq.lower(), K, 1):
                 kmer_string = str(kmer)
-                r.sadd("hosts", kmer_string)
+                db.sadd("hosts", kmer_string)
                 index(kmer_string)
             print(rcount)
 
 
-def make_targets(input_path=TARGET_PATH, target_id=TARGET_ID, db=r):
+def make_targets(db=r):
     alignment = AlignIO.read(TARGET_PATH, "clustal")
     seq_ids = [seq.id for seq in alignment]
     index_of_target = seq_ids.index(TARGET_ID)
     alignment_length = alignment.get_alignment_length()
-    conserved = [1 if all_equal(
-        [seq[i] for seq in alignment]) else 0 for i in range(alignment_length)]
+    conserved = conserved_in_alignment(alignment, alignment_length)
     for start in range(alignment_length - K):
-        if not all(conserved[start + OFFSET_1:start + OFFSET_2]):
-            continue
-        kmer = str(alignment[index_of_target][start:start + K].seq).lower()
-        if "-" in kmer:
-            continue
-        n_conserved = sum(conserved[start:start + K])
-        print(f"{kmer} at {start} has {int(n_conserved)} conserved bases")
-        db.zadd("targets", {kmer: n_conserved})
-    most = r.zrevrangebyscore("targets", 9001, 0, withscores=True, start=0, num=1)[0]
+        kmer, n_conserved = count_conserved(alignment, conserved, index_of_target, start)
+        if n_conserved > 0:
+            print(f"{kmer} at {start} has {int(n_conserved)} conserved bases")
+            db.zadd("targets", {kmer: n_conserved})
+    most = db.zrevrangebyscore("targets", 9001, 0, withscores=True, start=0, num=1)[0]
     print(
         f"the most conserved {K}mer {most[0].decode()} has {int(most[1])} bases conserved in {seq_ids}")
+
+
+def conserved_in_alignment(alignment, alignment_length):
+    return [1 if all_equal(
+        [seq[i] for seq in alignment]) else 0 for i in range(alignment_length)]
+
+
+def count_conserved(alignment, conserved, index_of_target, start):
+    if not all(conserved[start + OFFSET_1:start + OFFSET_2]):
+        kmer = ""
+        n_conserved = 0
+    else:
+        kmer = str(alignment[index_of_target][start:start + K].seq).lower()
+        if "-" in kmer:
+            n_conserved = 0
+        else:
+            n_conserved = sum(conserved[start:start + K])
+    return kmer, n_conserved
 
 
 def predict_side_effects(db=r):
@@ -136,7 +149,7 @@ def predict_side_effects(db=r):
             continue
         db.zadd("good_targets", {target: db.zscore("targets", t)})
     with open(OUTFILE_PATH, "w+") as outfile:
-        for k, good_target in enumerate(r.zrevrangebyscore("good_targets", 90, 0)):
+        for k, good_target in enumerate(db.zrevrangebyscore("good_targets", 90, 0)):
             good_target_string = good_target.decode()
             print("good target", k, good_target_string)
             outfile.write(good_target_string + "\n")
