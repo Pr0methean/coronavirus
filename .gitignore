@@ -3,3 +3,4 @@ human_transcriptome.fna
 .DS_Store
 trie.*
 /venv/
+/db/
