@@ -2,6 +2,8 @@
   <dictionary name="chris">
     <words>
       <w>attaaaggtttatcccttcccaggtaacaaaccacccaactgtcgatctcttgtaggtctgtcctctaaa</w>
+      <w>attaaaggtttatcccttcccaggtagcaaaccacccaactgtcgatctcttgtaggtctgtcctctaaa</w>
+      <w>cgaacttgaaaatctgtgtgcaggtagctcggctccatgctgagtgcactcacgcagtataactaataac</w>
       <w>cgaacttgaaaatctgtgtgcaggtcactcggctccatgctgagtgcactcacgcagtataactaataac</w>
       <w>clustal</w>
       <w>fasta</w>
@@ -9,6 +11,7 @@
       <w>kmer</w>
       <w>rcount</w>
       <w>taattacggtcgtcgacaggcaggtagtaactcgcctatctgctgcaggctgcttagggtttcgtccgtg</w>
+      <w>ttgcagcggatcaccagcaccaggtagtttcgtccgggtgtgaccgaaaggtaagagggagacccttgtc</w>
       <w>ttgcagcggatcaccagcaccaggtggtttcgtccgggtgtgaccgaaaggtaagagggagacccttgtc</w>
     </words>
   </dictionary>
