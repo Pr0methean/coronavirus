@@ -12,8 +12,8 @@ def bytesu(string):
 # length of the CRISPR guide RNA
 K = 28
 # path to a fasta file with host sequences to avoid
-# HOST_FILE = "GCF_000001405.39_GRCh38.p13_rna.fna" # all RNA in human transcriptome
-HOST_FILE = "lung-tissue-gene-cds.fa" # just lungs
+HOST_FILE = "GCF_000001405.39_GRCh38.p13_rna.fna" # all RNA in human transcriptome
+# HOST_FILE = "lung-tissue-gene-cds.fa" # just lungs
 HOST_PATH = os.path.join("host", HOST_FILE)
 # ending token for tries
 END = "*"
@@ -96,7 +96,7 @@ def host_has(kmer, db=leveldb):
     return should_avoid
 
 
-def make_hosts(input_path=HOST_PATH, db=r, out_trie=trie):
+def make_hosts(input_path=HOST_PATH, db=r, ldb=leveldb):
     if not REBUILD_TRIE:
         return
     trie.clear()
@@ -105,7 +105,7 @@ def make_hosts(input_path=HOST_PATH, db=r, out_trie=trie):
             for kmer in getKmers(record.seq.lower(), K, 1):
                 kmer_string = str(kmer)
                 db.sadd("hosts", kmer_string)
-                index(kmer_string)
+                index(kmer_string, ldb)
             print(rcount)
 
 
