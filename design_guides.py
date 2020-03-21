@@ -1,12 +1,13 @@
-from multiprocessing import Pool
-from Bio import AlignIO, SeqIO
-from datetime import datetime
-from Bio.Seq import Seq
-import itertools
-import pickle
-import shelve
-import redis
 import os
+
+import plyvel
+import redis
+from Bio import AlignIO, SeqIO
+
+
+def bytesu(string):
+    return bytes(string, "UTF-8")
+
 
 # length of the CRISPR guide RNA
 K = 28
@@ -16,6 +17,7 @@ HOST_FILE = "GCF_000001405.39_GRCh38.p13_rna.fna" # all RNA in human transcripto
 HOST_PATH = os.path.join("host", HOST_FILE)
 # ending token for tries
 END = "*"
+END_BYTES = bytesu(END)
 # path to pickle / save the trie
 REBUILD_TRIE = True
 TRIE_PATH = "trie"
@@ -34,6 +36,7 @@ TAIL_PATH = os.path.join("parts", "tail.fa")
 OUTFILE_PATH = os.path.join("guides", "trie_guides.csv")
 
 r = redis.Redis(host='localhost', port=6379)
+leveldb = plyvel.DB("db/", create_if_missing=True)
 
 # trie = shelve.open(TRIE_PATH)
 trie = {}
@@ -58,42 +61,42 @@ def getKmers(sequence, k, step):
         yield sequence[x:x + k]
 
 
-def index(kmer, out_trie=trie):
-    node = out_trie
-    for base in kmer:
-        if base not in node:
-            node[base] = {}
-        node = node[base]
-    node[END] = END
+def index(kmer, db=leveldb):
+    with db.write_batch() as wb:
+        for x in range(1, len(kmer) - 1):
+            prefix_str = kmer[:x]
+            prefix = bytesu(prefix_str)
+            wb.put(prefix, bytesu(''.join(set(str(db.get(prefix, '')) + kmer[x]))))
+        wb.put(bytesu(kmer), END_BYTES)
 
 
-def _find(node, path, kmer, d, max_mismatches=CUTOFF):
+def _find(path, kmer, d, db, max_mismatches):
     if not kmer:
         if len(path) is K:
             yield (path, d)
         return
     base, suffix = kmer[0], kmer[1:]
-    for key in node:
-        step = 1 if key is not base else 0
+    for key in db.get(bytesu(path), bytes()):
+        step = 1 if key is not bytesu(base) else 0
         if d + step > max_mismatches:
             return
-        for result in _find(node[key], path + key, suffix, d + step):
+        for result in _find(path + key, suffix, d + step, db, max_mismatches):
             yield result
 
 
-def find(kmer, haystack=trie):
-    return _find(haystack, "", kmer, 0)
+def find(kmer, db=leveldb, max_mismatches=CUTOFF):
+    return _find("", kmer, 0, db, max_mismatches)
 
 
-def host_has(kmer, haystack=trie):
-    matches = list(find(kmer, haystack))
+def host_has(kmer, db=leveldb):
+    matches = list(find(kmer, db))
     should_avoid = len(matches) > 0
     notice = "avoid" if should_avoid else "allow"
     print(notice, kmer, "matches", matches)
     return should_avoid
 
 
-def make_hosts(input_path=HOST_PATH, db=r, out_trie=trie):
+def make_hosts(input_path=HOST_PATH, db=r, ldb=leveldb):
     if not REBUILD_TRIE:
         return
     trie.clear()
@@ -102,7 +105,7 @@ def make_hosts(input_path=HOST_PATH, db=r, out_trie=trie):
             for kmer in getKmers(record.seq.lower(), K, 1):
                 kmer_string = str(kmer)
                 db.sadd("hosts", kmer_string)
-                index(kmer_string, out_trie)
+                index(kmer_string, ldb)
             print(rcount)
 
 
@@ -161,5 +164,6 @@ if __name__ == "__main__":
     # test the trie lookup works
     for i in range(5):
         host_has(r.srandmember("hosts").decode())
-    # make_targets()
-    # predict_side_effects()
+    make_targets()
+    predict_side_effects()
+    leveldb.close()
