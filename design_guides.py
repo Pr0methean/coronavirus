@@ -36,11 +36,8 @@ TAIL_PATH = os.path.join("parts", "tail.fa")
 # path for output
 OUTFILE_PATH = os.path.join("guides", "trie_guides.csv")
 
-r = redis.Redis(host='localhost', port=6379)
-leveldb = plyvel.DB("db/", create_if_missing=True)
-
-
-# trie = shelve.open(TRIE_PATH)
+r = None
+leveldb = None
 
 # helpers
 def all_equal(arr):
@@ -68,7 +65,7 @@ def index(kmer: str, db=leveldb):
             prefix = kmer_bytes[:x]
             old_value = db.get(prefix, EMPTY)
             if kmer_bytes[x] in old_value:
-                return
+                return  # this prefix is shared with a kmer that's already indexed
             else:
                 new_value = bytes(sorted([*old_value, kmer_bytes[x]]))
                 wb.put(prefix, new_value)
@@ -163,6 +160,8 @@ def predict_side_effects(db=r, out_path=OUTFILE_PATH):
 
 
 if __name__ == "__main__":
+    r = redis.Redis(host='localhost', port=6379)
+    leveldb = plyvel.DB("db/", create_if_missing=True)
     make_hosts()
     # test the trie lookup works
     for i in range(5):
