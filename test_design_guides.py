@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from design_guides import conserved_in_alignment, count_conserved, K
+from design_guides import conserved_in_alignment, count_conserved, K, add_to_bytes_as_set
 from Bio import AlignIO, SeqIO
 from datetime import datetime
 from Bio.Seq import Seq
@@ -46,3 +46,9 @@ class Test(TestCase):
         # Has bases 15-21 conserved
         self.assertEqual(count_conserved(self.alignment, self.conserved, 0, 6),
                          ("ggtttatcccttcccaggtagcaaacca", 9))
+
+    def test_add_to_bytes_as_set(self):
+        self.assertEqual(b'ACGT', add_to_bytes_as_set(b'G', b'TCA'))
+        self.assertEqual(b'ACGT', add_to_bytes_as_set(b'G', b'ACGT'))
+        self.assertEqual(b'T', add_to_bytes_as_set(b'T', b''))
+        self.assertEqual(b'T', add_to_bytes_as_set(b'T', b'T'))

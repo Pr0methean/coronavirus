@@ -66,12 +66,18 @@ def index(kmer, db=leveldb):
             prefix_str = kmer[:x]
             prefix = bytesu(prefix_str)
             old_value = db.get(prefix, EMPTY_BYTES)
-            new_value_set = set(old_value)
-            new_value_set.add(ord(kmer[x]))
-            new_value = bytesu(sorted(new_value_set))
+            nextchar = kmer[x]
+            new_value = add_to_bytes_as_set(nextchar, old_value)
             if old_value != new_value:
                 wb.put(prefix, new_value)
         wb.put(bytesu(kmer), END_BYTES)
+
+
+def add_to_bytes_as_set(char, dest):
+    new_value_set = set(dest)
+    new_value_set.add(ord(char))
+    new_value = bytes(sorted(new_value_set))
+    return new_value
 
 
 def _find(path, kmer, d, db, max_mismatches):
