@@ -13,8 +13,8 @@ def bytesu(string):
 # length of the CRISPR guide RNA
 K = 28
 # path to a fasta file with host sequences to avoid
-HOST_FILE = "GCF_000001405.39_GRCh38.p13_rna.fna"  # all RNA in human transcriptome
-# HOST_FILE = "lung-tissue-gene-cds.fa" # just lungs
+# HOST_FILE = "GCF_000001405.39_GRCh38.p13_rna.fna"  # all RNA in human transcriptome
+HOST_FILE = "lung-tissue-gene-cds.fa" # just lungs
 HOST_PATH = os.path.join("host", HOST_FILE)
 # ending token for tries
 END = bytesu("*")
@@ -163,10 +163,10 @@ def predict_side_effects(db=r, out_path=OUTFILE_PATH):
 if __name__ == "__main__":
     r = redis.Redis(host='localhost', port=6379)
     leveldb = plyvel.DB("db/", create_if_missing=True)
-    make_hosts()
+    make_hosts(db=r, ldb=leveldb)
     # test the trie lookup works
     for i in range(5):
         host_has(r.srandmember("hosts").decode())
-    make_targets()
-    predict_side_effects()
+    make_targets(db=r)
+    predict_side_effects(db=r)
     leveldb.close()
