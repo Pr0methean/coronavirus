@@ -1,9 +1,8 @@
 from unittest import TestCase
 
+from Bio import SeqIO
+
 from design_guides import conserved_in_alignment, count_conserved, K, add_to_bytes_as_set
-from Bio import AlignIO, SeqIO
-from datetime import datetime
-from Bio.Seq import Seq
 
 
 # noinspection SpellCheckingInspection
