@@ -18,6 +18,7 @@ HOST_PATH = os.path.join("host", HOST_FILE)
 # ending token for tries
 END = "*"
 END_BYTES = bytesu(END)
+EMPTY_BYTES = bytesu('')
 # path to pickle / save the trie
 REBUILD_TRIE = True
 TRIE_PATH = "trie"
@@ -66,7 +67,7 @@ def index(kmer, db=leveldb):
         for x in range(1, len(kmer) - 1):
             prefix_str = kmer[:x]
             prefix = bytesu(prefix_str)
-            old_value = db.get(prefix, '')
+            old_value = db.get(prefix, EMPTY_BYTES)
             new_value = bytesu(''.join(sorted(set(str(old_value) + kmer[x]))))
             if old_value != new_value:
                 wb.put(prefix, new_value)
@@ -104,7 +105,9 @@ def make_hosts(input_path=HOST_PATH, db=r, ldb=leveldb):
         return
     trie.clear()
     with open(input_path, "r") as host_file:
-        for rcount, record in enumerate(SeqIO.parse(host_file, "fasta")):
+        records = enumerate(SeqIO.parse(host_file, "fasta"))
+        [next(records) for x in range(116936)]
+        for rcount, record in records:
             for kmer in getKmers(record.seq.lower(), K, 1):
                 kmer_string = str(kmer)
                 db.sadd("hosts", kmer_string)
