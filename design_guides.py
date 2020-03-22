@@ -13,8 +13,8 @@ def bytesu(string):
 # length of the CRISPR guide RNA
 K = 28
 # path to a fasta file with host sequences to avoid
-# HOST_FILE = "GCF_000001405.39_GRCh38.p13_rna.fna"  # all RNA in human transcriptome
-HOST_FILE = "lung-tissue-gene-cds.fa" # just lungs
+HOST_FILE = "GCF_000001405.39_GRCh38.p13_rna.fna"  # all RNA in human transcriptome
+# HOST_FILE = "lung-tissue-gene-cds.fa" # just lungs
 HOST_PATH = os.path.join("host", HOST_FILE)
 # ending token for tries
 END = bytesu("*")
@@ -59,17 +59,16 @@ def getKmers(sequence: str, k: int, step: int):
         yield sequence[x:x + k]
 
 
-def index(kmer: str, db=leveldb):
+def index(kmer: str, db, wb):
     kmer_bytes = bytesu(kmer + '*')
-    with db.write_batch() as wb:
-        for x in reversed(range(1, len(kmer_bytes))):
-            prefix = kmer_bytes[:x]
-            old_value = db.get(prefix, EMPTY)
-            if kmer_bytes[x] in old_value:
-                return  # this prefix is shared with a kmer that's already indexed
-            else:
-                new_value = bytes(sorted([*old_value, kmer_bytes[x]]))
-                wb.put(prefix, new_value)
+    for x in reversed(range(1, len(kmer_bytes))):
+        prefix = kmer_bytes[:x]
+        old_value = db.get(prefix, EMPTY)
+        if kmer_bytes[x] in old_value:
+            return  # this prefix is shared with a kmer that's already indexed
+        else:
+            new_value = bytes(sorted([*old_value, kmer_bytes[x]]))
+            wb.put(prefix, new_value)
 
 
 def _find(path, kmer, d, db, max_mismatches):
@@ -103,10 +102,11 @@ def make_hosts(input_path=HOST_PATH, db=r, ldb=leveldb):
         return
     with open(input_path, "r") as host_file:
         for rcount, record in enumerate(SeqIO.parse(host_file, "fasta")):
-            for kmer in getKmers(record.seq.lower(), K, 1):
-                kmer_string = str(kmer)
-                db.sadd("hosts", kmer_string)
-                index(kmer_string, ldb)
+            with ldb.write_batch() as wb:
+                for kmer in getKmers(record.seq.lower(), K, 1):
+                    kmer_string = str(kmer)
+                    db.sadd("hosts", kmer_string)
+                    index(kmer_string, ldb, wb)
             print(rcount)
 
 
