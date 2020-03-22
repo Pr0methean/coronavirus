@@ -3,6 +3,7 @@ import os
 import plyvel
 import redis
 from Bio import AlignIO, SeqIO
+from Bio.Seq import Seq
 
 
 def bytesu(string):
@@ -46,21 +47,21 @@ def all_equal(arr):
     return arr.count(arr[0]) == len(arr)
 
 
-def read_fasta(fasta_path):
+def read_fasta(fasta_path: str) -> Seq:
     record = SeqIO.read(handle=fasta_path, format="fasta")
     return record.seq.lower()
 
 
-def write_fasta(fasta_path, sequences):
+def write_fasta(fasta_path: str, sequences):
     SeqIO.write(sequences=sequences, handle=fasta_path, format="fasta")
 
 
-def getKmers(sequence, k, step):
+def getKmers(sequence: str, k: int, step: int):
     for x in range(0, len(sequence) - k, step):
         yield sequence[x:x + k]
 
 
-def index(kmer, db=leveldb):
+def index(kmer: str, db=leveldb):
     kmer_bytes = bytesu(kmer)
     with db.write_batch() as wb:
         for x in range(1, len(kmer) - 1):
@@ -72,12 +73,8 @@ def index(kmer, db=leveldb):
         wb.put(kmer_bytes, END)
 
 
-def add_to_bytes_as_set(byte_to_add, dest):
-    if dest == EMPTY:
-        return bytes([byte_to_add])
-    new_value_set = set(dest)
-    new_value_set.add(byte_to_add)
-    return bytes(sorted(new_value_set))
+def add_to_bytes_as_set(byte_to_add: int, dest: bytes):
+    return dest if byte_to_add in dest else bytes(sorted([*dest, byte_to_add]))
 
 
 def _find(path, kmer, d, db, max_mismatches):
