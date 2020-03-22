@@ -72,6 +72,8 @@ def index(kmer, db=leveldb):
 
 
 def add_to_bytes_as_set(char, dest):
+    if dest == EMPTY_BYTES:
+        return bytesu(char)
     new_value_set = set(dest)
     new_value_set.add(ord(char))
     new_value = bytes(sorted(new_value_set))
