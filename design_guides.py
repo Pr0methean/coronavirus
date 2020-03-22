@@ -39,6 +39,7 @@ OUTFILE_PATH = os.path.join("guides", "trie_guides.csv")
 r = None
 leveldb = None
 
+
 # helpers
 def all_equal(arr):
     return arr.count(arr[0]) == len(arr)
@@ -101,7 +102,7 @@ def make_hosts(input_path=HOST_PATH, db=r, ldb=leveldb):
     if not REBUILD_TRIE:
         return
     with open(input_path, "r") as host_file:
-       for rcount, record in enumerate(SeqIO.parse(host_file, "fasta")):
+        for rcount, record in enumerate(SeqIO.parse(host_file, "fasta")):
             for kmer in getKmers(record.seq.lower(), K, 1):
                 kmer_string = str(kmer)
                 db.sadd("hosts", kmer_string)

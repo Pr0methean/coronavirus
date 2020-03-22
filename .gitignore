@@ -4,3 +4,6 @@ human_transcriptome.fna
 trie.*
 /venv/
 /db/
+/venv-pypy/
+/db-old/
+/venv-pypy/

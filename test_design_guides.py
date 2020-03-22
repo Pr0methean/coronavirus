@@ -10,7 +10,7 @@ class FakeWriteBatch:
         self.leveldb = leveldb
 
     def __enter__(self):
-        self.my_dict = {}
+        self.my_dict: dict[bytes, bytes] = {}
         return self
 
     def put(self, key, value):
@@ -86,12 +86,13 @@ class Test(TestCase):
             b'acc': b't',
             b'acct': b'g',
             b'acctg': b'*'})
-        index('accgc', fake_leveldb)
-        self.assertDictEqual(fake_leveldb.my_dict, {
-            b'a': b'c',
-            b'ac': b'c',
-            b'acc': b'gt',
-            b'accg': b'c',
-            b'acct': b'g',
-            b'accgc': b'*',
-            b'acctg': b'*'})
+        for x in range(2):  # Should be idempotent
+            index('accgc', fake_leveldb)
+            self.assertDictEqual(fake_leveldb.my_dict, {
+                b'a': b'c',
+                b'ac': b'c',
+                b'acc': b'gt',
+                b'accg': b'c',
+                b'acct': b'g',
+                b'accgc': b'*',
+                b'acctg': b'*'})
