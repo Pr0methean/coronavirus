@@ -16,9 +16,8 @@ HOST_FILE = "GCF_000001405.39_GRCh38.p13_rna.fna"  # all RNA in human transcript
 # HOST_FILE = "lung-tissue-gene-cds.fa" # just lungs
 HOST_PATH = os.path.join("host", HOST_FILE)
 # ending token for tries
-END = "*"
-END_BYTES = bytesu(END)
-EMPTY_BYTES = bytesu('')
+END = bytesu("*")
+EMPTY = bytesu('')
 # path to pickle / save the trie
 REBUILD_TRIE = True
 TRIE_PATH = "trie"
@@ -38,6 +37,7 @@ OUTFILE_PATH = os.path.join("guides", "trie_guides.csv")
 
 r = redis.Redis(host='localhost', port=6379)
 leveldb = plyvel.DB("db/", create_if_missing=True)
+
 
 # trie = shelve.open(TRIE_PATH)
 
@@ -64,15 +64,15 @@ def index(kmer, db=leveldb):
     with db.write_batch() as wb:
         for x in range(1, len(kmer) - 1):
             prefix = bytesu(kmer[:x])
-            old_value = db.get(prefix, EMPTY_BYTES)
+            old_value = db.get(prefix, EMPTY)
             new_value = add_to_bytes_as_set(kmer[x], old_value)
             if old_value != new_value:
                 wb.put(prefix, new_value)
-        wb.put(bytesu(kmer), END_BYTES)
+        wb.put(bytesu(kmer), END)
 
 
 def add_to_bytes_as_set(char, dest):
-    if dest == EMPTY_BYTES:
+    if dest == EMPTY:
         return bytes([ord(char)])
     new_value_set = set(dest)
     new_value_set.add(ord(char))
