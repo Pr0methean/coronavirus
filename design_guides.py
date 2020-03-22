@@ -66,17 +66,17 @@ def index(kmer, db=leveldb):
         for x in range(1, len(kmer) - 1):
             prefix = kmer_bytes[:x]
             old_value = db.get(prefix, EMPTY)
-            new_value = add_to_bytes_as_set(kmer[x], old_value)
+            new_value = add_to_bytes_as_set(kmer_bytes[x], old_value)
             if old_value != new_value:
                 wb.put(prefix, new_value)
         wb.put(kmer_bytes, END)
 
 
-def add_to_bytes_as_set(char, dest):
+def add_to_bytes_as_set(byte, dest):
     if dest == EMPTY:
-        return bytes([ord(char)])
+        return byte
     new_value_set = set(dest)
-    new_value_set.add(ord(char))
+    new_value_set.add(ord(byte))
     return bytes(sorted(new_value_set))
 
 

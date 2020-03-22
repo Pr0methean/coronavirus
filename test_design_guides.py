@@ -47,7 +47,7 @@ class Test(TestCase):
                          ("ggtttatcccttcccaggtagcaaacca", 9))
 
     def test_add_to_bytes_as_set(self):
-        self.assertEqual(b'ACGT', add_to_bytes_as_set('G', b'TCA'))
-        self.assertEqual(b'ACGT', add_to_bytes_as_set('G', b'ACGT'))
-        self.assertEqual(b'T', add_to_bytes_as_set('T', b''))
-        self.assertEqual(b'T', add_to_bytes_as_set('T', b'T'))
+        self.assertEqual(b'ACGT', add_to_bytes_as_set(b'G', b'TCA'))
+        self.assertEqual(b'ACGT', add_to_bytes_as_set(b'G', b'ACGT'))
+        self.assertEqual(b'T', add_to_bytes_as_set(b'T', b''))
+        self.assertEqual(b'T', add_to_bytes_as_set(b'T', b'T'))
