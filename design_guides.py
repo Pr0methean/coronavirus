@@ -68,7 +68,9 @@ def index(kmer, db=leveldb):
             prefix_str = kmer[:x]
             prefix = bytesu(prefix_str)
             old_value = db.get(prefix, EMPTY_BYTES)
-            new_value = bytesu(''.join(sorted(set(str(old_value) + kmer[x]))))
+            new_value_set = set(old_value)
+            new_value_set.add(ord(kmer[x]))
+            new_value = bytesu(sorted(new_value_set))
             if old_value != new_value:
                 wb.put(prefix, new_value)
         wb.put(bytesu(kmer), END_BYTES)
