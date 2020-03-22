@@ -90,8 +90,8 @@ def find(kmer, db=leveldb, max_mismatches=CUTOFF):
     return _find("", kmer, 0, db, max_mismatches)
 
 
-def host_has(kmer, db=leveldb):
-    matches = list(find(kmer, db))
+def host_has(kmer, ldb=leveldb):
+    matches = list(find(kmer, ldb))
     should_avoid = len(matches) > 0
     notice = "avoid" if should_avoid else "allow"
     print(notice, kmer, "matches", matches)
@@ -144,11 +144,11 @@ def count_conserved(alignment, conserved, index_of_target, start):
     return kmer, n_conserved
 
 
-def predict_side_effects(db=r, out_path=OUTFILE_PATH):
+def predict_side_effects(db=r, out_path=OUTFILE_PATH, ldb=leveldb):
     targets = db.zrevrangebyscore("targets", 9001, 0)
     for target in targets:
         t = target.decode()
-        should_avoid = host_has(t)
+        should_avoid = host_has(t, ldb)
         if should_avoid:
             continue
         db.zadd("good_targets", {target: db.zscore("targets", t)})
@@ -166,7 +166,7 @@ if __name__ == "__main__":
     make_hosts(db=r, ldb=leveldb)
     # test the trie lookup works
     for i in range(5):
-        host_has(r.srandmember("hosts").decode())
+        host_has(r.srandmember("hosts").decode(), ldb=leveldb)
     make_targets(db=r)
-    predict_side_effects(db=r)
+    predict_side_effects(db=r, ldb=leveldb)
     leveldb.close()
