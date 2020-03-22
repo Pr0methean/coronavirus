@@ -46,8 +46,3 @@ class Test(TestCase):
         self.assertEqual(count_conserved(self.alignment, self.conserved, 0, 6),
                          ("ggtttatcccttcccaggtagcaaacca", 9))
 
-    def test_add_to_bytes_as_set(self):
-        self.assertEqual(b'ACGT', add_to_bytes_as_set(ord('G'), b'TCA'))
-        self.assertEqual(b'ACGT', add_to_bytes_as_set(ord('G'), b'ACGT'))
-        self.assertEqual(b'T', add_to_bytes_as_set(ord('T'), b''))
-        self.assertEqual(b'T', add_to_bytes_as_set(ord('T'), b'T'))

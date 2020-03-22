@@ -62,19 +62,16 @@ def getKmers(sequence: str, k: int, step: int):
 
 
 def index(kmer: str, db=leveldb):
-    kmer_bytes = bytesu(kmer)
+    kmer_bytes = bytesu([*kmer, '*'])
     with db.write_batch() as wb:
-        for x in range(1, len(kmer) - 1):
+        for x in reversed(range(1, len(kmer_bytes))):
             prefix = kmer_bytes[:x]
             old_value = db.get(prefix, EMPTY)
-            new_value = add_to_bytes_as_set(kmer_bytes[x], old_value)
-            if old_value != new_value:
+            if kmer_bytes[x] in db.get(prefix):
+                return
+            else:
+                new_value = bytes(sorted([*old_value, kmer_bytes[x]]))
                 wb.put(prefix, new_value)
-        wb.put(kmer_bytes, END)
-
-
-def add_to_bytes_as_set(byte_to_add: int, dest: bytes):
-    return dest if byte_to_add in dest else bytes(sorted([*dest, byte_to_add]))
 
 
 def _find(path, kmer, d, db, max_mismatches):
