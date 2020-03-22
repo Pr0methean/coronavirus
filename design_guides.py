@@ -76,8 +76,7 @@ def add_to_bytes_as_set(char, dest):
         return bytes([ord(char)])
     new_value_set = set(dest)
     new_value_set.add(ord(char))
-    new_value = bytes(sorted(new_value_set))
-    return new_value
+    return bytes(sorted(new_value_set))
 
 
 def _find(path, kmer, d, db, max_mismatches):
