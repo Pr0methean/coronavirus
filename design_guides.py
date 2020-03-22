@@ -63,8 +63,7 @@ def getKmers(sequence, k, step):
 def index(kmer, db=leveldb):
     with db.write_batch() as wb:
         for x in range(1, len(kmer) - 1):
-            prefix_str = kmer[:x]
-            prefix = bytesu(prefix_str)
+            prefix = bytesu(kmer[:x])
             old_value = db.get(prefix, EMPTY_BYTES)
             new_value = add_to_bytes_as_set(kmer[x], old_value)
             if old_value != new_value:
