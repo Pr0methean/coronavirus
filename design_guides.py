@@ -12,7 +12,7 @@ def bytesu(string):
 # length of the CRISPR guide RNA
 K = 28
 # path to a fasta file with host sequences to avoid
-HOST_FILE = "GCF_000001405.39_GRCh38.p13_rna.fna" # all RNA in human transcriptome
+HOST_FILE = "GCF_000001405.39_GRCh38.p13_rna.fna"  # all RNA in human transcriptome
 # HOST_FILE = "lung-tissue-gene-cds.fa" # just lungs
 HOST_PATH = os.path.join("host", HOST_FILE)
 # ending token for tries
@@ -40,8 +40,6 @@ r = redis.Redis(host='localhost', port=6379)
 leveldb = plyvel.DB("db/", create_if_missing=True)
 
 # trie = shelve.open(TRIE_PATH)
-trie = {}
-
 
 # helpers
 def all_equal(arr):
@@ -105,7 +103,6 @@ def host_has(kmer, db=leveldb):
 def make_hosts(input_path=HOST_PATH, db=r, ldb=leveldb):
     if not REBUILD_TRIE:
         return
-    trie.clear()
     with open(input_path, "r") as host_file:
        for rcount, record in enumerate(SeqIO.parse(host_file, "fasta")):
             for kmer in getKmers(record.seq.lower(), K, 1):
@@ -163,7 +160,7 @@ def predict_side_effects(db=r, out_path=OUTFILE_PATH):
             print("good target", k, good_target_string)
             outfile.write(good_target_string + "\n")
     print(f"saved {db.zcard('good_targets')} good targets at {out_path}")
-    
+
 
 if __name__ == "__main__":
     make_hosts()
