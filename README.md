@@ -2,6 +2,8 @@
 # Covid-19 treatment should be safe, effective, and efficient
 # Algorithms + Data to Attack Covid-19 Genome with CRISPR
 
+# TLDR: Delete RNA in Virus which isn't in Human
+
 ## NOTE: Please help find a lab to test this! Forward this anyone who may have a capable lab
 ## Contact: Bion Howard - bion@bitpharma.com - +1 843 830 2918
 
