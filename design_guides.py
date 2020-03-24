@@ -165,7 +165,7 @@ def predict_side_effects(db=r, out_path=OUTFILE_PATH, ldb=leveldb):
         if should_avoid:
             continue
         db.zadd(GOOD_TARGETS_KEY, {target: db.zscore(TARGETS_KEY, t)})
-    with open(OUTFILE_PATH, "w+") as outfile:
+    with open(out_path, "w+") as outfile:
         for k, good_target in enumerate(db.zrevrangebyscore(GOOD_TARGETS_KEY, 90, 0)):
             good_target_string = good_target.decode()
             print("good target", k, good_target_string)
