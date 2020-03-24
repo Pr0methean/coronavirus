@@ -63,7 +63,7 @@ def index(kmer: str, db):
     kmer_bytes = bytesu(kmer)
     if db.get(kmer_bytes, EMPTY) != EMPTY:
         return
-    with db.write_batch() as wb:
+    with db.write_batch(transaction=True) as wb:
         wb.put(kmer_bytes, END)
         for x in reversed(range(1, len(kmer_bytes))):
             prefix = kmer_bytes[:x]
