@@ -10,6 +10,8 @@ import os
 
 # length of the CRISPR guide RNA
 K = 28
+TARGETS_KEY = f"targets_{K}"
+GOOD_TARGETS_KEY = f"good_targets_{K}"
 # path to a fasta file with host sequences to avoid
 HOST_FILE = "GCF_000001405.39_GRCh38.p13_rna.fna" # all RNA in human transcriptome
 # HOST_FILE = "lung-tissue-gene-cds.fa" # just lungs
@@ -17,7 +19,7 @@ HOST_PATH = os.path.join("host", HOST_FILE)
 # ending token for tries
 END = "*"
 # path to pickle / save the trie
-REBUILD_TRIE = True
+REBUILD_TRIE = False
 TRIE_PATH = "trie"
 # path to alignment and id for the sequence to delete
 TARGET_PATH = os.path.join("alignments", "HKU1+MERS+SARS+nCoV-Consensus.clu")
@@ -107,7 +109,7 @@ def make_hosts(input_path=HOST_PATH, db=r):
 
 
 def make_targets(input_path=TARGET_PATH, target_id=TARGET_ID, db=r):
-    key = f"targets{K}"
+
     alignment = AlignIO.read(input_path, "clustal")
     seq_ids = [seq.id for seq in alignment]
     index_of_target = seq_ids.index(target_id)
@@ -122,26 +124,26 @@ def make_targets(input_path=TARGET_PATH, target_id=TARGET_ID, db=r):
             continue
         n_conserved = sum(conserved[start:start + K])
         print(f"{kmer} at {start} has {int(n_conserved)} conserved bases")
-        db.zadd(key, {kmer: n_conserved})
-    most = db.zrevrangebyscore("targets", 9001, 0, withscores=True, start=0, num=1)[0]
+        db.zadd(TARGETS_KEY, {kmer: n_conserved})
+    most = db.zrevrangebyscore(TARGETS_KEY, 9001, 0, withscores=True, start=0, num=1)[0]
     print(
         f"the most conserved {K}mer {most[0].decode()} has {int(most[1])} bases conserved in {seq_ids}")
 
 
 def predict_side_effects(db=r):
-    targets = db.zrevrangebyscore("targets", 9001, 0)
+    targets = db.zrevrangebyscore(TARGETS_KEY, 9001, 0)
     for target in targets:
         t = target.decode()
         should_avoid = host_has(t)
         if should_avoid:
             continue
-        db.zadd("good_targets", {target: db.zscore("targets", t)})
+        db.zadd(GOOD_TARGETS_KEY, {target: db.zscore(TARGETS_KEY, t)})
     with open(OUTFILE_PATH, "w+") as outfile:
-        for k, good_target in enumerate(r.zrevrangebyscore("good_targets", 90, 0)):
+        for k, good_target in enumerate(r.zrevrangebyscore(GOOD_TARGETS_KEY, 90, 0)):
             good_target_string = good_target.decode()
             print("good target", k, good_target_string)
             outfile.write(good_target_string + "\n")
-    print(f"saved {db.zcard('good_targets')} good targets at {OUTFILE_PATH}")
+    print(f"saved {db.zcard(GOOD_TARGETS_KEY)} good targets at {OUTFILE_PATH}")
 
 
 if __name__ == "__main__":
@@ -149,5 +151,5 @@ if __name__ == "__main__":
     # test the trie lookup works
     for i in range(5):
         host_has(r.srandmember("hosts").decode())
-    # make_targets()
-    # predict_side_effects()
+    make_targets()
+    predict_side_effects()
