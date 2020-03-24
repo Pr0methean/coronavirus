@@ -60,8 +60,11 @@ def getKmers(sequence: str, k: int, step: int):
 
 
 def index(kmer: str, db):
-    kmer_bytes = bytesu(kmer + '*')
+    kmer_bytes = bytesu(kmer)
+    if db.get(kmer_bytes, EMPTY) != EMPTY:
+        return
     with db.write_batch() as wb:
+        wb.put(kmer_bytes, END)
         for x in reversed(range(1, len(kmer_bytes))):
             prefix = kmer_bytes[:x]
             old_value = db.get(prefix, EMPTY)
