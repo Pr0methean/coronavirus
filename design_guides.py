@@ -1,16 +1,9 @@
-from multiprocessing import Pool
-
 import os
 
 import plyvel
 import redis
 from Bio import AlignIO, SeqIO
 from Bio.Seq import Seq
-import itertools
-import pickle
-import shelve
-import redis
-import os
 
 
 def bytesu(string):
