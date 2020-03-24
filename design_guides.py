@@ -107,9 +107,10 @@ def make_hosts(input_path=HOST_PATH, db=r):
 
 
 def make_targets(input_path=TARGET_PATH, target_id=TARGET_ID, db=r):
-    alignment = AlignIO.read(TARGET_PATH, "clustal")
+    key = f"targets{K}"
+    alignment = AlignIO.read(input_path, "clustal")
     seq_ids = [seq.id for seq in alignment]
-    index_of_target = seq_ids.index(TARGET_ID)
+    index_of_target = seq_ids.index(target_id)
     alignment_length = alignment.get_alignment_length()
     conserved = [1 if all_equal(
         [seq[i] for seq in alignment]) else 0 for i in range(alignment_length)]
@@ -121,7 +122,7 @@ def make_targets(input_path=TARGET_PATH, target_id=TARGET_ID, db=r):
             continue
         n_conserved = sum(conserved[start:start + K])
         print(f"{kmer} at {start} has {int(n_conserved)} conserved bases")
-        db.zadd("targets", {kmer: n_conserved})
+        db.zadd(key, {kmer: n_conserved})
     most = db.zrevrangebyscore("targets", 9001, 0, withscores=True, start=0, num=1)[0]
     print(
         f"the most conserved {K}mer {most[0].decode()} has {int(most[1])} bases conserved in {seq_ids}")
