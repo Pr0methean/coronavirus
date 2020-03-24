@@ -3,3 +3,6 @@ human_transcriptome.fna
 .DS_Store
 trie.*
 /venv/
+/db/
+/venv-pypy/
+/db-old/
