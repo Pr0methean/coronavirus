@@ -1,9 +1,39 @@
 from unittest import TestCase
 
-from design_guides import conserved_in_alignment, count_conserved, K
-from Bio import AlignIO, SeqIO
-from datetime import datetime
-from Bio.Seq import Seq
+from Bio import SeqIO
+
+from design_guides import conserved_in_alignment, count_conserved, K, index
+
+
+class FakeWriteBatch:
+    def __init__(self, leveldb):
+        self.leveldb = leveldb
+
+    def __enter__(self):
+        self.my_dict: dict[bytes, bytes] = {}
+        return self
+
+    def put(self, key, value):
+        self.my_dict[key] = value
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.leveldb.my_dict.update(self.my_dict)
+        self.my_dict = None
+
+
+class FakeLevelDb:
+    def __init__(self):
+        self.my_dict = {}
+
+    def get(self, key, default):
+        if key in self.my_dict:
+            return self.my_dict[key]
+        else:
+            return default
+
+    def write_batch(self) -> FakeWriteBatch:
+        wb = FakeWriteBatch(self)
+        return wb
 
 
 # noinspection SpellCheckingInspection
@@ -46,3 +76,23 @@ class Test(TestCase):
         # Has bases 15-21 conserved
         self.assertEqual(count_conserved(self.alignment, self.conserved, 0, 6),
                          ("ggtttatcccttcccaggtagcaaacca", 9))
+
+    def test_index(self):
+        fake_leveldb = FakeLevelDb()
+        index('acctg', fake_leveldb)
+        self.assertDictEqual(fake_leveldb.my_dict, {
+            b'a': b'c',
+            b'ac': b'c',
+            b'acc': b't',
+            b'acct': b'g',
+            b'acctg': b'*'})
+        for x in range(2):  # Should be idempotent
+            index('accgc', fake_leveldb)
+            self.assertDictEqual(fake_leveldb.my_dict, {
+                b'a': b'c',
+                b'ac': b'c',
+                b'acc': b'gt',
+                b'accg': b'c',
+                b'acct': b'g',
+                b'accgc': b'*',
+                b'acctg': b'*'})

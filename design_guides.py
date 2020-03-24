@@ -3,6 +3,7 @@ import os
 import plyvel
 import redis
 from Bio import AlignIO, SeqIO
+from Bio.Seq import Seq
 
 
 def bytesu(string):
@@ -12,12 +13,12 @@ def bytesu(string):
 # length of the CRISPR guide RNA
 K = 28
 # path to a fasta file with host sequences to avoid
-HOST_FILE = "GCF_000001405.39_GRCh38.p13_rna.fna" # all RNA in human transcriptome
+HOST_FILE = "GCF_000001405.39_GRCh38.p13_rna.fna"  # all RNA in human transcriptome
 # HOST_FILE = "lung-tissue-gene-cds.fa" # just lungs
 HOST_PATH = os.path.join("host", HOST_FILE)
 # ending token for tries
-END = "*"
-END_BYTES = bytesu(END)
+END = bytesu("*")
+EMPTY = bytesu('')
 # path to pickle / save the trie
 REBUILD_TRIE = True
 TRIE_PATH = "trie"
@@ -35,11 +36,8 @@ TAIL_PATH = os.path.join("parts", "tail.fa")
 # path for output
 OUTFILE_PATH = os.path.join("guides", "trie_guides.csv")
 
-r = redis.Redis(host='localhost', port=6379)
-leveldb = plyvel.DB("db/", create_if_missing=True)
-
-# trie = shelve.open(TRIE_PATH)
-trie = {}
+r = None
+leveldb = None
 
 
 # helpers
@@ -47,27 +45,34 @@ def all_equal(arr):
     return arr.count(arr[0]) == len(arr)
 
 
-def read_fasta(fasta_path):
+def read_fasta(fasta_path: str) -> Seq:
     record = SeqIO.read(handle=fasta_path, format="fasta")
     return record.seq.lower()
 
 
-def write_fasta(fasta_path, sequences):
+def write_fasta(fasta_path: str, sequences):
     SeqIO.write(sequences=sequences, handle=fasta_path, format="fasta")
 
 
-def getKmers(sequence, k, step):
+def getKmers(sequence: str, k: int, step: int):
     for x in range(0, len(sequence) - k, step):
         yield sequence[x:x + k]
 
 
-def index(kmer, db=leveldb):
-    with db.write_batch() as wb:
-        for x in range(1, len(kmer) - 1):
-            prefix_str = kmer[:x]
-            prefix = bytesu(prefix_str)
-            wb.put(prefix, bytesu(''.join(set(str(db.get(prefix, '')) + kmer[x]))))
-        wb.put(bytesu(kmer), END_BYTES)
+def index(kmer: str, db):
+    kmer_bytes = bytesu(kmer)
+    if db.get(kmer_bytes, EMPTY) != EMPTY:
+        return
+    with db.write_batch(transaction=True) as wb:
+        wb.put(kmer_bytes, END)
+        for x in reversed(range(1, len(kmer_bytes))):
+            prefix = kmer_bytes[:x]
+            old_value = db.get(prefix, EMPTY)
+            if kmer_bytes[x] in old_value:
+                return  # this prefix is shared with a kmer that's already indexed
+            else:
+                new_value = bytes(sorted([*old_value, kmer_bytes[x]]))
+                wb.put(prefix, new_value)
 
 
 def _find(path, kmer, d, db, max_mismatches):
@@ -88,8 +93,8 @@ def find(kmer, db=leveldb, max_mismatches=CUTOFF):
     return _find("", kmer, 0, db, max_mismatches)
 
 
-def host_has(kmer, db=leveldb):
-    matches = list(find(kmer, db))
+def host_has(kmer, ldb=leveldb):
+    matches = list(find(kmer, ldb))
     should_avoid = len(matches) > 0
     notice = "avoid" if should_avoid else "allow"
     print(notice, kmer, "matches", matches)
@@ -99,13 +104,13 @@ def host_has(kmer, db=leveldb):
 def make_hosts(input_path=HOST_PATH, db=r, ldb=leveldb):
     if not REBUILD_TRIE:
         return
-    trie.clear()
     with open(input_path, "r") as host_file:
         for rcount, record in enumerate(SeqIO.parse(host_file, "fasta")):
-            for kmer in getKmers(record.seq.lower(), K, 1):
-                kmer_string = str(kmer)
-                db.sadd("hosts", kmer_string)
-                index(kmer_string, ldb)
+            with ldb.write_batch(transaction=True) as wb:
+                for kmer in getKmers(record.seq.lower(), K, 1):
+                    kmer_string = str(kmer)
+                    db.sadd("hosts", kmer_string)
+                    index(kmer_string, ldb)
             print(rcount)
 
 
@@ -143,11 +148,11 @@ def count_conserved(alignment, conserved, index_of_target, start):
     return kmer, n_conserved
 
 
-def predict_side_effects(db=r, out_path=OUTFILE_PATH):
+def predict_side_effects(db=r, out_path=OUTFILE_PATH, ldb=leveldb):
     targets = db.zrevrangebyscore("targets", 9001, 0)
     for target in targets:
         t = target.decode()
-        should_avoid = host_has(t)
+        should_avoid = host_has(t, ldb)
         if should_avoid:
             continue
         db.zadd("good_targets", {target: db.zscore("targets", t)})
@@ -157,13 +162,15 @@ def predict_side_effects(db=r, out_path=OUTFILE_PATH):
             print("good target", k, good_target_string)
             outfile.write(good_target_string + "\n")
     print(f"saved {db.zcard('good_targets')} good targets at {out_path}")
-    
+
 
 if __name__ == "__main__":
-    make_hosts()
+    r = redis.Redis(host='localhost', port=6379)
+    leveldb = plyvel.DB("db/", create_if_missing=True)
+    make_hosts(db=r, ldb=leveldb)
     # test the trie lookup works
     for i in range(5):
-        host_has(r.srandmember("hosts").decode())
-    make_targets()
-    predict_side_effects()
+        host_has(r.srandmember("hosts").decode(), ldb=leveldb)
+    make_targets(db=r)
+    predict_side_effects(db=r, ldb=leveldb)
     leveldb.close()
