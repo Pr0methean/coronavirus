@@ -170,7 +170,7 @@ def predict_side_effects(db=r, out_path=OUTFILE_PATH, ldb=leveldb):
             good_target_string = good_target.decode()
             print("good target", k, good_target_string)
             outfile.write(good_target_string + "\n")
-    print(f"saved {db.zcard(GOOD_TARGETS_KEY)} good targets at {OUTFILE_PATH}")
+    print(f"saved {db.zcard(GOOD_TARGETS_KEY)} good targets at {out_path}")
 
 
 if __name__ == "__main__":
