@@ -79,8 +79,7 @@ class Test(TestCase):
 
     def test_index(self):
         fake_leveldb = FakeLevelDb()
-        with fake_leveldb.write_batch() as wb:
-            index('acctg', fake_leveldb, wb)
+        index('acctg', fake_leveldb)
         self.assertDictEqual(fake_leveldb.my_dict, {
             b'a': b'c',
             b'ac': b'c',
@@ -88,8 +87,7 @@ class Test(TestCase):
             b'acct': b'g',
             b'acctg': b'*'})
         for x in range(2):  # Should be idempotent
-            with fake_leveldb.write_batch() as wb:
-                index('accgc', fake_leveldb, wb)
+            index('accgc', fake_leveldb)
             self.assertDictEqual(fake_leveldb.my_dict, {
                 b'a': b'c',
                 b'ac': b'c',

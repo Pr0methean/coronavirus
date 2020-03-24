@@ -59,16 +59,17 @@ def getKmers(sequence: str, k: int, step: int):
         yield sequence[x:x + k]
 
 
-def index(kmer: str, db, wb):
+def index(kmer: str, db):
     kmer_bytes = bytesu(kmer + '*')
-    for x in reversed(range(1, len(kmer_bytes))):
-        prefix = kmer_bytes[:x]
-        old_value = db.get(prefix, EMPTY)
-        if kmer_bytes[x] in old_value:
-            return  # this prefix is shared with a kmer that's already indexed
-        else:
-            new_value = bytes(sorted([*old_value, kmer_bytes[x]]))
-            wb.put(prefix, new_value)
+    with db.write_batch() as wb:
+        for x in reversed(range(1, len(kmer_bytes))):
+            prefix = kmer_bytes[:x]
+            old_value = db.get(prefix, EMPTY)
+            if kmer_bytes[x] in old_value:
+                return  # this prefix is shared with a kmer that's already indexed
+            else:
+                new_value = bytes(sorted([*old_value, kmer_bytes[x]]))
+                wb.put(prefix, new_value)
 
 
 def _find(path, kmer, d, db, max_mismatches):
@@ -106,7 +107,7 @@ def make_hosts(input_path=HOST_PATH, db=r, ldb=leveldb):
                 for kmer in getKmers(record.seq.lower(), K, 1):
                     kmer_string = str(kmer)
                     db.sadd("hosts", kmer_string)
-                    index(kmer_string, ldb, wb)
+                    index(kmer_string, ldb)
             print(rcount)
 
 
