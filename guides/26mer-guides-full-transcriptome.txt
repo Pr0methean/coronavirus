@@ -1,0 +1,556 @@
+/home/chris/git/coronavirus/venv/bin/python /media/chris/Linux/coronavirus-copy/design_guides.py
+allow tcagaaataaatggcctcgaaaatagac matches []
+allow tccagcggaagaagcggcgggagaagaa matches []
+allow gatcctaagcagaggcaagaaggatata matches []
+allow tctaaggccagcaaaatgctcaggtctg matches []
+allow aattgtgtggcaattcatagcttagcac matches []
+gggcagataacaactgttatcttgcc at 7237 has 14 conserved bases
+gcaaactacacaattggaattgtgtt at 9785 has 14 conserved bases
+caaactacacaattggaattgtgtta at 9786 has 13 conserved bases
+aaactacacaattggaattgtgttaa at 9787 has 14 conserved bases
+aactacacaattggaattgtgttaat at 9788 has 15 conserved bases
+aagttgcagttaaaatgtttgatgct at 10217 has 12 conserved bases
+agttgcagttaaaatgtttgatgctt at 10218 has 13 conserved bases
+gttgcagttaaaatgtttgatgctta at 10219 has 13 conserved bases
+ttgcagttaaaatgtttgatgcttac at 10220 has 13 conserved bases
+tgaggtttagaagagcttttggtgaa at 11696 has 13 conserved bases
+gaggtttagaagagcttttggtgaat at 11697 has 14 conserved bases
+gttctgatgttctttaccaaccacca at 12245 has 18 conserved bases
+ttctgatgttctttaccaaccaccac at 12246 has 17 conserved bases
+tctgatgttctttaccaaccaccaca at 12247 has 16 conserved bases
+ggttcatgtggtagtgttggttttaa at 12736 has 17 conserved bases
+gttcatgtggtagtgttggttttaac at 12737 has 16 conserved bases
+ttcatgtggtagtgttggttttaaca at 12738 has 15 conserved bases
+taaatggagacaggtggtttctcaat at 12947 has 12 conserved bases
+gtagtgctttattagaagatgaattt at 13160 has 16 conserved bases
+tagtgctttattagaagatgaattta at 13161 has 15 conserved bases
+agtgctttattagaagatgaatttac at 13162 has 16 conserved bases
+acaatgcaagagatggttgtgttccc at 14780 has 14 conserved bases
+gttgtgtacacacactggtactggtc at 15531 has 13 conserved bases
+ttgtgtacacacactggtactggtca at 15532 has 12 conserved bases
+gatcaagaatcctttggtggtgcatc at 15589 has 18 conserved bases
+ctgatgcacaatcgtttttaaacggg at 15821 has 14 conserved bases
+tgatgcacaatcgtttttaaacgggt at 15822 has 14 conserved bases
+gatgcacaatcgtttttaaacgggtt at 15823 has 14 conserved bases
+atgcacaatcgtttttaaacgggttt at 15824 has 14 conserved bases
+tgcacaatcgtttttaaacgggtttg at 15825 has 14 conserved bases
+gcacaggcactagtactgatgtcgta at 15886 has 11 conserved bases
+cacaggcactagtactgatgtcgtat at 15887 has 12 conserved bases
+acaggcactagtactgatgtcgtata at 15888 has 12 conserved bases
+atgctttaaggcattttgatgaaggt at 16210 has 14 conserved bases
+accgttattttaaatattgggatcag at 16675 has 16 conserved bases
+ccgttattttaaatattgggatcaga at 16676 has 16 conserved bases
+acagatgcattctgcattgtgcaaac at 16735 has 16 conserved bases
+cagatgcattctgcattgtgcaaact at 16736 has 16 conserved bases
+agatgcattctgcattgtgcaaactt at 16737 has 17 conserved bases
+ctaacaatgttgcttttcaaactgtc at 17029 has 15 conserved bases
+taacaatgttgcttttcaaactgtca at 17030 has 14 conserved bases
+aacaatgttgcttttcaaactgtcaa at 17031 has 14 conserved bases
+acaatgttgcttttcaaactgtcaaa at 17032 has 13 conserved bases
+caatgttgcttttcaaactgtcaaac at 17033 has 14 conserved bases
+aatgttgcttttcaaactgtcaaacc at 17034 has 15 conserved bases
+cggtaattttaacaaagacttctatg at 17060 has 19 conserved bases
+ggtaattttaacaaagacttctatga at 17061 has 20 conserved bases
+aattaaaacacttcttctttgctcag at 17131 has 18 conserved bases
+atgctgctatcagcgattatgactac at 17164 has 18 conserved bases
+atgactactatcgttataatctacca at 17182 has 17 conserved bases
+tactatttgtagttgaagttgttgat at 17230 has 14 conserved bases
+actatttgtagttgaagttgttgata at 17231 has 14 conserved bases
+ctatttgtagttgaagttgttgataa at 17232 has 15 conserved bases
+cagctggttttccatttaataaatgg at 17326 has 16 conserved bases
+agctggttttccatttaataaatggg at 17327 has 17 conserved bases
+gctggttttccatttaataaatgggg at 17328 has 18 conserved bases
+gtaaggctagactttattatgattca at 17353 has 15 conserved bases
+taaggctagactttattatgattcaa at 17354 has 14 conserved bases
+aaggctagactttattatgattcaat at 17355 has 15 conserved bases
+tcatccctactataactcaaatgaat at 17428 has 19 conserved bases
+catccctactataactcaaatgaatc at 17429 has 18 conserved bases
+atccctactataactcaaatgaatct at 17430 has 19 conserved bases
+tccctactataactcaaatgaatctt at 17431 has 19 conserved bases
+ccctactataactcaaatgaatctta at 17432 has 19 conserved bases
+cctactataactcaaatgaatcttaa at 17433 has 20 conserved bases
+ctactataactcaaatgaatcttaag at 17434 has 19 conserved bases
+atgccattagtgcaaagaatagagct at 17461 has 23 conserved bases
+tgccattagtgcaaagaatagagctc at 17462 has 23 conserved bases
+gccattagtgcaaagaatagagctcg at 17463 has 23 conserved bases
+ccattagtgcaaagaatagagctcgc at 17464 has 23 conserved bases
+cattagtgcaaagaatagagctcgca at 17465 has 23 conserved bases
+attagtgcaaagaatagagctcgcac at 17466 has 24 conserved bases
+ttagtgcaaagaatagagctcgcacc at 17467 has 23 conserved bases
+tagtgcaaagaatagagctcgcaccg at 17468 has 23 conserved bases
+agtgcaaagaatagagctcgcaccgt at 17469 has 24 conserved bases
+gtgcaaagaatagagctcgcaccgta at 17470 has 23 conserved bases
+tgcaaagaatagagctcgcaccgtag at 17471 has 23 conserved bases
+gcaaagaatagagctcgcaccgtagc at 17472 has 23 conserved bases
+tagaaaaccctcaccttatgggttgg at 17650 has 18 conserved bases
+agaaaaccctcaccttatgggttggg at 17651 has 18 conserved bases
+gaaaaccctcaccttatgggttggga at 17652 has 19 conserved bases
+aaaaccctcaccttatgggttgggat at 17653 has 19 conserved bases
+aaaccctcaccttatgggttgggatt at 17654 has 19 conserved bases
+aaccctcaccttatgggttgggatta at 17655 has 20 conserved bases
+accctcaccttatgggttgggattat at 17656 has 19 conserved bases
+ccctcaccttatgggttgggattatc at 17657 has 20 conserved bases
+cctcaccttatgggttgggattatcc at 17658 has 21 conserved bases
+ctcaccttatgggttgggattatcct at 17659 has 20 conserved bases
+tcaccttatgggttgggattatccta at 17660 has 20 conserved bases
+caccttatgggttgggattatcctaa at 17661 has 21 conserved bases
+ttgttcttgctcgcaaacatacaacg at 17731 has 13 conserved bases
+gtaaacatttctcaatgatgatactc at 18073 has 16 conserved bases
+taaacatttctcaatgatgatactct at 18074 has 16 conserved bases
+aaacatttctcaatgatgatactctc at 18075 has 15 conserved bases
+aaaacaatgtttttatgtctgaagca at 18190 has 19 conserved bases
+aaacaatgtttttatgtctgaagcaa at 18191 has 19 conserved bases
+aacaatgtttttatgtctgaagcaaa at 18192 has 20 conserved bases
+ccggctgttttgtagatgatatcgta at 18343 has 18 conserved bases
+tgtctttagctatagatgcttaccca at 18403 has 18 conserved bases
+gtctttagctatagatgcttacccac at 18404 has 17 conserved bases
+tctttagctatagatgcttacccact at 18405 has 18 conserved bases
+ctttagctatagatgcttacccactt at 18406 has 18 conserved bases
+tttagctatagatgcttacccactta at 18407 has 18 conserved bases
+ttagctatagatgcttacccacttac at 18408 has 18 conserved bases
+aactttacttaggaggtatgagctat at 18805 has 15 conserved bases
+gttggtaaacctagaccaccacttaa at 19125 has 15 conserved bases
+ttggtaaacctagaccaccacttaac at 19126 has 15 conserved bases
+ctacactagtgccacaagagcactat at 19333 has 15 conserved bases
+tgagttttctagcaatgttgcaaatt at 19400 has 15 conserved bases
+gagttttctagcaatgttgcaaatta at 19401 has 15 conserved bases
+agatatagttgtctttgatgaaattt at 19724 has 15 conserved bases
+gatatagttgtctttgatgaaatttc at 19725 has 15 conserved bases
+tttcaatggccacaaattatgatttg at 19747 has 15 conserved bases
+ttcaatggccacaaattatgatttga at 19748 has 14 conserved bases
+tcaatggccacaaattatgatttgag at 19749 has 14 conserved bases
+acttatgaaaactataggtccagaca at 19901 has 15 conserved bases
+cttatgaaaactataggtccagacat at 19902 has 15 conserved bases
+gaacttgtcggcgttgtcctgctgaa at 19936 has 14 conserved bases
+ctgtctttatttcaccttataattca at 20146 has 17 conserved bases
+tgtctttatttcaccttataattcac at 20147 has 17 conserved bases
+gtctttatttcaccttataattcaca at 20148 has 18 conserved bases
+tctttatttcaccttataattcacag at 20149 has 18 conserved bases
+gatgtcgaggggtgtcatgctactag at 20697 has 17 conserved bases
+gtataaagattgtacaaatgttaagt at 20917 has 12 conserved bases
+catgtagctagttgtgatgcaatcat at 21231 has 17 conserved bases
+gttgtgatgcaatcatgactaggtgt at 21241 has 18 conserved bases
+atggtgtatgcctattttggaattgc at 21565 has 18 conserved bases
+tggtgtatgcctattttggaattgca at 21566 has 18 conserved bases
+ggtgtatgcctattttggaattgcaa at 21567 has 18 conserved bases
+ccattgtttgtagatttgacactaga at 21616 has 19 conserved bases
+cattgtttgtagatttgacactagag at 21617 has 19 conserved bases
+attgtttgtagatttgacactagagt at 21618 has 20 conserved bases
+gttgtgatggtggcagtttgtatgta at 21667 has 21 conserved bases
+ttgtgatggtggcagtttgtatgtaa at 21668 has 21 conserved bases
+tgtgatggtggcagtttgtatgtaaa at 21669 has 22 conserved bases
+gtgatggtggcagtttgtatgtaaat at 21670 has 21 conserved bases
+tgatggtggcagtttgtatgtaaata at 21671 has 21 conserved bases
+gatggtggcagtttgtatgtaaataa at 21672 has 21 conserved bases
+gggtttacaaacaatttgatacttat at 21958 has 17 conserved bases
+aaacaatttgatacttataacctctg at 21966 has 17 conserved bases
+ctgaaacttactttactcagagtaga at 22690 has 11 conserved bases
+tgaaacttactttactcagagtagaa at 22691 has 11 conserved bases
+gaaacttactttactcagagtagaaa at 22692 has 10 conserved bases
+tataaattagaaggctatgccttcga at 22794 has 16 conserved bases
+tttcatttatgctttggtgtaaagat at 23101 has 19 conserved bases
+ttcatttatgctttggtgtaaagatg at 23102 has 18 conserved bases
+tcatttatgctttggtgtaaagatgg at 23103 has 17 conserved bases
+attttggtgctggttctgataaagga at 23365 has 19 conserved bases
+ttttggtgctggttctgataaaggag at 23366 has 18 conserved bases
+tttggtgctggttctgataaaggagt at 23367 has 19 conserved bases
+ttggtgctggttctgataaaggagtt at 23368 has 18 conserved bases
+tggtgctggttctgataaaggagttg at 23369 has 18 conserved bases
+agataacagaacattcttggaatgct at 23668 has 17 conserved bases
+gataacagaacattcttggaatgctg at 23669 has 17 conserved bases
+atttctagtgatgttcttgttaacaa at 24027 has 15 conserved bases
+aagattgctgattataattataaatt at 26518 has 12 conserved bases
+agattgctgattataattataaatta at 26519 has 12 conserved bases
+gattgctgattataattataaattac at 26520 has 12 conserved bases
+attgctgattataattataaattacc at 26521 has 12 conserved bases
+ttgctgattataattataaattacca at 26522 has 12 conserved bases
+ccaagacatcagtagattgtacaatg at 27813 has 10 conserved bases
+tgctagagacctcatttgtgcacaaa at 28186 has 14 conserved bases
+aacttagctccaattttggtgcaatt at 28545 has 14 conserved bases
+acttagctccaattttggtgcaattt at 28546 has 13 conserved bases
+cttagctccaattttggtgcaatttc at 28547 has 13 conserved bases
+ctactaaaatgtcagagtgtgtactt at 28728 has 11 conserved bases
+tactaaaatgtcagagtgtgtacttg at 28729 has 11 conserved bases
+actaaaatgtcagagtgtgtacttgg at 28730 has 11 conserved bases
+caaaaagagttgatttttgtggaaag at 28761 has 12 conserved bases
+aaaaagagttgatttttgtggaaagg at 28762 has 12 conserved bases
+aaaagagttgatttttgtggaaaggg at 28763 has 13 conserved bases
+atgagcagtatataaaatggccatgg at 29298 has 15 conserved bases
+tgagcagtatataaaatggccatggt at 29299 has 15 conserved bases
+gagcagtatataaaatggccatggta at 29300 has 15 conserved bases
+atggccatggtacatttggctaggtt at 29314 has 18 conserved bases
+tggccatggtacatttggctaggttt at 29315 has 18 conserved bases
+tcctctggctgttatggccagtaact at 32075 has 15 conserved bases
+agtctactcttgtgcagaatgaattc at 35294 has 16 conserved bases
+gtctactcttgtgcagaatgaattct at 35295 has 16 conserved bases
+agagctgcctatatggaagagcccta at 35484 has 10 conserved bases
+gagctgcctatatggaagagccctaa at 35485 has 10 conserved bases
+agctgcctatatggaagagccctaat at 35486 has 10 conserved bases
+the most conserved 26mer attagtgcaaagaatagagctcgcac has 24 bases conserved in ['HKU1', 'MERS', 'nCoV', 'SARS']
+allow attagtgcaaagaatagagctcgcac matches []
+allow agtgcaaagaatagagctcgcaccgt matches []
+allow ttagtgcaaagaatagagctcgcacc matches []
+allow tgccattagtgcaaagaatagagctc matches []
+allow tgcaaagaatagagctcgcaccgtag matches []
+allow tagtgcaaagaatagagctcgcaccg matches []
+allow gtgcaaagaatagagctcgcaccgta matches []
+allow gccattagtgcaaagaatagagctcg matches []
+allow gcaaagaatagagctcgcaccgtagc matches []
+allow ccattagtgcaaagaatagagctcgc matches []
+allow cattagtgcaaagaatagagctcgca matches []
+allow atgccattagtgcaaagaatagagct matches []
+allow tgtgatggtggcagtttgtatgtaaa matches []
+allow ttgtgatggtggcagtttgtatgtaa matches []
+allow tgatggtggcagtttgtatgtaaata matches []
+allow gttgtgatggtggcagtttgtatgta matches []
+allow gtgatggtggcagtttgtatgtaaat matches []
+allow gatggtggcagtttgtatgtaaataa matches []
+allow cctcaccttatgggttgggattatcc matches []
+allow caccttatgggttgggattatcctaa matches []
+allow tcaccttatgggttgggattatccta matches []
+allow ggtaattttaacaaagacttctatga matches []
+allow ctcaccttatgggttgggattatcct matches []
+allow cctactataactcaaatgaatcttaa matches []
+allow ccctcaccttatgggttgggattatc matches []
+allow attgtttgtagatttgacactagagt matches []
+allow aaccctcaccttatgggttgggatta matches []
+allow aacaatgtttttatgtctgaagcaaa matches []
+allow tttggtgctggttctgataaaggagt matches []
+allow tttcatttatgctttggtgtaaagat matches []
+allow tccctactataactcaaatgaatctt matches []
+allow tcatccctactataactcaaatgaat matches []
+allow gaaaaccctcaccttatgggttggga matches []
+allow ctactataactcaaatgaatcttaag matches []
+allow cggtaattttaacaaagacttctatg matches []
+allow ccctactataactcaaatgaatctta matches []
+allow ccattgtttgtagatttgacactaga matches []
+allow cattgtttgtagatttgacactagag matches []
+allow attttggtgctggttctgataaagga matches []
+allow atccctactataactcaaatgaatct matches []
+allow accctcaccttatgggttgggattat matches []
+allow aaaccctcaccttatgggttgggatt matches []
+allow aaacaatgtttttatgtctgaagcaa matches []
+allow aaaaccctcaccttatgggttgggat matches []
+allow aaaacaatgtttttatgtctgaagca matches []
+allow ttttggtgctggttctgataaaggag matches []
+allow tttagctatagatgcttacccactta matches []
+allow ttggtgctggttctgataaaggagtt matches []
+allow ttcatttatgctttggtgtaaagatg matches []
+allow ttagctatagatgcttacccacttac matches []
+allow tgtctttagctatagatgcttaccca matches []
+allow tggtgtatgcctattttggaattgca matches []
+allow tggtgctggttctgataaaggagttg matches []
+allow tggccatggtacatttggctaggttt matches []
+allow tctttatttcaccttataattcacag matches []
+allow tctttagctatagatgcttacccact matches []
+allow tagaaaaccctcaccttatgggttgg matches []
+allow gttgtgatgcaatcatgactaggtgt matches []
+allow gttctgatgttctttaccaaccacca matches []
+allow gtctttatttcaccttataattcaca matches []
+allow ggtgtatgcctattttggaattgcaa matches []
+allow gctggttttccatttaataaatgggg matches []
+allow gatcaagaatcctttggtggtgcatc matches []
+allow ctttagctatagatgcttacccactt matches []
+allow ccggctgttttgtagatgatatcgta matches []
+allow catccctactataactcaaatgaatc matches []
+allow atggtgtatgcctattttggaattgc matches []
+allow atggccatggtacatttggctaggtt matches []
+allow atgctgctatcagcgattatgactac matches []
+allow agaaaaccctcaccttatgggttggg matches []
+allow aattaaaacacttcttctttgctcag matches []
+allow ttctgatgttctttaccaaccaccac matches []
+allow tgtctttatttcaccttataattcac matches []
+allow tcatttatgctttggtgtaaagatgg matches []
+allow gtctttagctatagatgcttacccac matches []
+allow ggttcatgtggtagtgttggttttaa matches []
+allow gggtttacaaacaatttgatacttat matches []
+allow gatgtcgaggggtgtcatgctactag matches []
+allow gataacagaacattcttggaatgctg matches []
+allow ctgtctttatttcaccttataattca matches []
+allow catgtagctagttgtgatgcaatcat matches []
+allow atgactactatcgttataatctacca matches []
+allow agctggttttccatttaataaatggg matches []
+allow agatgcattctgcattgtgcaaactt matches []
+allow agataacagaacattcttggaatgct matches []
+allow aaacaatttgatacttataacctctg matches []
+allow tctgatgttctttaccaaccaccaca matches []
+allow tataaattagaaggctatgccttcga matches []
+allow taaacatttctcaatgatgatactct matches []
+allow gttcatgtggtagtgttggttttaac matches []
+allow gtctactcttgtgcagaatgaattct matches []
+allow gtagtgctttattagaagatgaattt matches []
+allow gtaaacatttctcaatgatgatactc matches []
+allow ccgttattttaaatattgggatcaga matches []
+allow cagctggttttccatttaataaatgg matches []
+allow cagatgcattctgcattgtgcaaact matches []
+allow agtgctttattagaagatgaatttac matches []
+allow agtctactcttgtgcagaatgaattc matches []
+allow accgttattttaaatattgggatcag matches []
+allow acagatgcattctgcattgtgcaaac matches []
+allow tttcaatggccacaaattatgatttg matches []
+allow ttggtaaacctagaccaccacttaac matches []
+allow ttcatgtggtagtgttggttttaaca matches []
+allow tgagttttctagcaatgttgcaaatt matches []
+allow tgagcagtatataaaatggccatggt matches []
+allow tcctctggctgttatggccagtaact matches []
+allow tagtgctttattagaagatgaattta matches []
+allow gttggtaaacctagaccaccacttaa matches []
+allow gtaaggctagactttattatgattca matches []
+allow gatatagttgtctttgatgaaatttc matches []
+allow gagttttctagcaatgttgcaaatta matches []
+allow gagcagtatataaaatggccatggta matches []
+allow cttatgaaaactataggtccagacat matches []
+allow ctatttgtagttgaagttgttgataa matches []
+allow ctacactagtgccacaagagcactat matches []
+allow ctaacaatgttgcttttcaaactgtc matches []
+allow atttctagtgatgttcttgttaacaa matches []
+allow atgagcagtatataaaatggccatgg matches []
+allow agatatagttgtctttgatgaaattt matches []
+allow acttatgaaaactataggtccagaca matches []
+allow aatgttgcttttcaaactgtcaaacc matches []
+allow aaggctagactttattatgattcaat matches []
+allow aactttacttaggaggtatgagctat matches []
+allow aactacacaattggaattgtgttaat matches []
+allow aaacatttctcaatgatgatactctc matches []
+allow ttcaatggccacaaattatgatttga matches []
+allow tgctagagacctcatttgtgcacaaa matches []
+allow tgcacaatcgtttttaaacgggtttg matches []
+allow tgatgcacaatcgtttttaaacgggt matches []
+allow tcaatggccacaaattatgatttgag matches []
+allow tactatttgtagttgaagttgttgat matches []
+allow taaggctagactttattatgattcaa matches []
+allow taacaatgttgcttttcaaactgtca matches []
+allow gggcagataacaactgttatcttgcc matches []
+allow gcaaactacacaattggaattgtgtt matches []
+allow gatgcacaatcgtttttaaacgggtt matches []
+allow gaggtttagaagagcttttggtgaat matches []
+allow gaacttgtcggcgttgtcctgctgaa matches []
+allow ctgatgcacaatcgtttttaaacggg matches []
+allow caatgttgcttttcaaactgtcaaac matches []
+allow atgctttaaggcattttgatgaaggt matches []
+allow atgcacaatcgtttttaaacgggttt matches []
+allow actatttgtagttgaagttgttgata matches []
+allow acaatgcaagagatggttgtgttccc matches []
+allow aacttagctccaattttggtgcaatt matches []
+allow aacaatgttgcttttcaaactgtcaa matches []
+allow aaactacacaattggaattgtgttaa matches []
+allow ttgttcttgctcgcaaacatacaacg matches []
+allow ttgcagttaaaatgtttgatgcttac matches []
+allow tgaggtttagaagagcttttggtgaa matches []
+allow gttgtgtacacacactggtactggtc matches []
+allow gttgcagttaaaatgtttgatgctta matches []
+allow cttagctccaattttggtgcaatttc matches []
+allow caaactacacaattggaattgtgtta matches []
+allow agttgcagttaaaatgtttgatgctt matches []
+allow acttagctccaattttggtgcaattt matches []
+allow acaatgttgcttttcaaactgtcaaa matches []
+allow aaaagagttgatttttgtggaaaggg matches []
+allow ttgtgtacacacactggtactggtca matches []
+allow ttgctgattataattataaattacca matches []
+allow taaatggagacaggtggtttctcaat matches []
+allow gtataaagattgtacaaatgttaagt matches []
+allow gattgctgattataattataaattac matches []
+allow cacaggcactagtactgatgtcgtat matches []
+allow caaaaagagttgatttttgtggaaag matches []
+allow attgctgattataattataaattacc matches []
+allow agattgctgattataattataaatta matches []
+allow acaggcactagtactgatgtcgtata matches []
+allow aagttgcagttaaaatgtttgatgct matches []
+allow aagattgctgattataattataaatt matches []
+allow aaaaagagttgatttttgtggaaagg matches []
+allow tgaaacttactttactcagagtagaa matches []
+allow tactaaaatgtcagagtgtgtacttg matches []
+allow gcacaggcactagtactgatgtcgta matches []
+allow ctgaaacttactttactcagagtaga matches []
+allow ctactaaaatgtcagagtgtgtactt matches []
+allow actaaaatgtcagagtgtgtacttgg matches []
+allow gagctgcctatatggaagagccctaa matches []
+allow gaaacttactttactcagagtagaaa matches []
+allow ccaagacatcagtagattgtacaatg matches []
+allow agctgcctatatggaagagccctaat matches []
+allow agagctgcctatatggaagagcccta matches []
+good target 0 attagtgcaaagaatagagctcgcac
+good target 1 agtgcaaagaatagagctcgcaccgt
+good target 2 ttagtgcaaagaatagagctcgcacc
+good target 3 tgccattagtgcaaagaatagagctc
+good target 4 tgcaaagaatagagctcgcaccgtag
+good target 5 tagtgcaaagaatagagctcgcaccg
+good target 6 gtgcaaagaatagagctcgcaccgta
+good target 7 gccattagtgcaaagaatagagctcg
+good target 8 gcaaagaatagagctcgcaccgtagc
+good target 9 ccattagtgcaaagaatagagctcgc
+good target 10 cattagtgcaaagaatagagctcgca
+good target 11 atgccattagtgcaaagaatagagct
+good target 12 tgtgatggtggcagtttgtatgtaaa
+good target 13 ttgtgatggtggcagtttgtatgtaa
+good target 14 tgatggtggcagtttgtatgtaaata
+good target 15 gttgtgatggtggcagtttgtatgta
+good target 16 gtgatggtggcagtttgtatgtaaat
+good target 17 gatggtggcagtttgtatgtaaataa
+good target 18 cctcaccttatgggttgggattatcc
+good target 19 caccttatgggttgggattatcctaa
+good target 20 tcaccttatgggttgggattatccta
+good target 21 ggtaattttaacaaagacttctatga
+good target 22 ctcaccttatgggttgggattatcct
+good target 23 cctactataactcaaatgaatcttaa
+good target 24 ccctcaccttatgggttgggattatc
+good target 25 attgtttgtagatttgacactagagt
+good target 26 aaccctcaccttatgggttgggatta
+good target 27 aacaatgtttttatgtctgaagcaaa
+good target 28 tttggtgctggttctgataaaggagt
+good target 29 tttcatttatgctttggtgtaaagat
+good target 30 tccctactataactcaaatgaatctt
+good target 31 tcatccctactataactcaaatgaat
+good target 32 gaaaaccctcaccttatgggttggga
+good target 33 ctactataactcaaatgaatcttaag
+good target 34 cggtaattttaacaaagacttctatg
+good target 35 ccctactataactcaaatgaatctta
+good target 36 ccattgtttgtagatttgacactaga
+good target 37 cattgtttgtagatttgacactagag
+good target 38 attttggtgctggttctgataaagga
+good target 39 atccctactataactcaaatgaatct
+good target 40 accctcaccttatgggttgggattat
+good target 41 aaaccctcaccttatgggttgggatt
+good target 42 aaacaatgtttttatgtctgaagcaa
+good target 43 aaaaccctcaccttatgggttgggat
+good target 44 aaaacaatgtttttatgtctgaagca
+good target 45 ttttggtgctggttctgataaaggag
+good target 46 tttagctatagatgcttacccactta
+good target 47 ttggtgctggttctgataaaggagtt
+good target 48 ttcatttatgctttggtgtaaagatg
+good target 49 ttagctatagatgcttacccacttac
+good target 50 tgtctttagctatagatgcttaccca
+good target 51 tggtgtatgcctattttggaattgca
+good target 52 tggtgctggttctgataaaggagttg
+good target 53 tggccatggtacatttggctaggttt
+good target 54 tctttatttcaccttataattcacag
+good target 55 tctttagctatagatgcttacccact
+good target 56 tagaaaaccctcaccttatgggttgg
+good target 57 gttgtgatgcaatcatgactaggtgt
+good target 58 gttctgatgttctttaccaaccacca
+good target 59 gtctttatttcaccttataattcaca
+good target 60 ggtgtatgcctattttggaattgcaa
+good target 61 gctggttttccatttaataaatgggg
+good target 62 gatcaagaatcctttggtggtgcatc
+good target 63 ctttagctatagatgcttacccactt
+good target 64 ccggctgttttgtagatgatatcgta
+good target 65 catccctactataactcaaatgaatc
+good target 66 atggtgtatgcctattttggaattgc
+good target 67 atggccatggtacatttggctaggtt
+good target 68 atgctgctatcagcgattatgactac
+good target 69 agaaaaccctcaccttatgggttggg
+good target 70 aattaaaacacttcttctttgctcag
+good target 71 ttctgatgttctttaccaaccaccac
+good target 72 tgtctttatttcaccttataattcac
+good target 73 tcatttatgctttggtgtaaagatgg
+good target 74 gtctttagctatagatgcttacccac
+good target 75 ggttcatgtggtagtgttggttttaa
+good target 76 gggtttacaaacaatttgatacttat
+good target 77 gatgtcgaggggtgtcatgctactag
+good target 78 gataacagaacattcttggaatgctg
+good target 79 ctgtctttatttcaccttataattca
+good target 80 catgtagctagttgtgatgcaatcat
+good target 81 atgactactatcgttataatctacca
+good target 82 agctggttttccatttaataaatggg
+good target 83 agatgcattctgcattgtgcaaactt
+good target 84 agataacagaacattcttggaatgct
+good target 85 aaacaatttgatacttataacctctg
+good target 86 tctgatgttctttaccaaccaccaca
+good target 87 tataaattagaaggctatgccttcga
+good target 88 taaacatttctcaatgatgatactct
+good target 89 gttcatgtggtagtgttggttttaac
+good target 90 gtctactcttgtgcagaatgaattct
+good target 91 gtagtgctttattagaagatgaattt
+good target 92 gtaaacatttctcaatgatgatactc
+good target 93 ccgttattttaaatattgggatcaga
+good target 94 cagctggttttccatttaataaatgg
+good target 95 cagatgcattctgcattgtgcaaact
+good target 96 agtgctttattagaagatgaatttac
+good target 97 agtctactcttgtgcagaatgaattc
+good target 98 accgttattttaaatattgggatcag
+good target 99 acagatgcattctgcattgtgcaaac
+good target 100 tttcaatggccacaaattatgatttg
+good target 101 ttggtaaacctagaccaccacttaac
+good target 102 ttcatgtggtagtgttggttttaaca
+good target 103 tgagttttctagcaatgttgcaaatt
+good target 104 tgagcagtatataaaatggccatggt
+good target 105 tcctctggctgttatggccagtaact
+good target 106 tagtgctttattagaagatgaattta
+good target 107 gttggtaaacctagaccaccacttaa
+good target 108 gtaaggctagactttattatgattca
+good target 109 gatatagttgtctttgatgaaatttc
+good target 110 gagttttctagcaatgttgcaaatta
+good target 111 gagcagtatataaaatggccatggta
+good target 112 cttatgaaaactataggtccagacat
+good target 113 ctatttgtagttgaagttgttgataa
+good target 114 ctacactagtgccacaagagcactat
+good target 115 ctaacaatgttgcttttcaaactgtc
+good target 116 atttctagtgatgttcttgttaacaa
+good target 117 atgagcagtatataaaatggccatgg
+good target 118 agatatagttgtctttgatgaaattt
+good target 119 acttatgaaaactataggtccagaca
+good target 120 aatgttgcttttcaaactgtcaaacc
+good target 121 aaggctagactttattatgattcaat
+good target 122 aactttacttaggaggtatgagctat
+good target 123 aactacacaattggaattgtgttaat
+good target 124 aaacatttctcaatgatgatactctc
+good target 125 ttcaatggccacaaattatgatttga
+good target 126 tgctagagacctcatttgtgcacaaa
+good target 127 tgcacaatcgtttttaaacgggtttg
+good target 128 tgatgcacaatcgtttttaaacgggt
+good target 129 tcaatggccacaaattatgatttgag
+good target 130 tactatttgtagttgaagttgttgat
+good target 131 taaggctagactttattatgattcaa
+good target 132 taacaatgttgcttttcaaactgtca
+good target 133 gggcagataacaactgttatcttgcc
+good target 134 gcaaactacacaattggaattgtgtt
+good target 135 gatgcacaatcgtttttaaacgggtt
+good target 136 gaggtttagaagagcttttggtgaat
+good target 137 gaacttgtcggcgttgtcctgctgaa
+good target 138 ctgatgcacaatcgtttttaaacggg
+good target 139 caatgttgcttttcaaactgtcaaac
+good target 140 atgctttaaggcattttgatgaaggt
+good target 141 atgcacaatcgtttttaaacgggttt
+good target 142 actatttgtagttgaagttgttgata
+good target 143 acaatgcaagagatggttgtgttccc
+good target 144 aacttagctccaattttggtgcaatt
+good target 145 aacaatgttgcttttcaaactgtcaa
+good target 146 aaactacacaattggaattgtgttaa
+good target 147 ttgttcttgctcgcaaacatacaacg
+good target 148 ttgcagttaaaatgtttgatgcttac
+good target 149 tgaggtttagaagagcttttggtgaa
+good target 150 gttgtgtacacacactggtactggtc
+good target 151 gttgcagttaaaatgtttgatgctta
+good target 152 cttagctccaattttggtgcaatttc
+good target 153 caaactacacaattggaattgtgtta
+good target 154 agttgcagttaaaatgtttgatgctt
+good target 155 acttagctccaattttggtgcaattt
+good target 156 acaatgttgcttttcaaactgtcaaa
+good target 157 aaaagagttgatttttgtggaaaggg
+good target 158 ttgtgtacacacactggtactggtca
+good target 159 ttgctgattataattataaattacca
+good target 160 taaatggagacaggtggtttctcaat
+good target 161 gtataaagattgtacaaatgttaagt
+good target 162 gattgctgattataattataaattac
+good target 163 cacaggcactagtactgatgtcgtat
+good target 164 caaaaagagttgatttttgtggaaag
+good target 165 attgctgattataattataaattacc
+good target 166 agattgctgattataattataaatta
+good target 167 acaggcactagtactgatgtcgtata
+good target 168 aagttgcagttaaaatgtttgatgct
+good target 169 aagattgctgattataattataaatt
+good target 170 aaaaagagttgatttttgtggaaagg
+good target 171 tgaaacttactttactcagagtagaa
+good target 172 tactaaaatgtcagagtgtgtacttg
+good target 173 gcacaggcactagtactgatgtcgta
+good target 174 ctgaaacttactttactcagagtaga
+good target 175 ctactaaaatgtcagagtgtgtactt
+good target 176 actaaaatgtcagagtgtgtacttgg
+good target 177 gagctgcctatatggaagagccctaa
+good target 178 gaaacttactttactcagagtagaaa
+good target 179 ccaagacatcagtagattgtacaatg
+good target 180 agctgcctatatggaagagccctaat
+good target 181 agagctgcctatatggaagagcccta
+saved 182 good targets at guides/trie_guides.csv
+
+Process finished with exit code 0
