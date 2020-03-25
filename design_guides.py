@@ -12,8 +12,10 @@ def bytesu(string):
 
 # length of the CRISPR guide RNA
 K = 28
+TARGETS_KEY = f"targets_{K}"
+GOOD_TARGETS_KEY = f"good_targets_{K}"
 # path to a fasta file with host sequences to avoid
-HOST_FILE = "GCF_000001405.39_GRCh38.p13_rna.fna"  # all RNA in human transcriptome
+HOST_FILE = "GCF_000001405.39_GRCh38.p13_rna.fna" # all RNA in human transcriptome
 # HOST_FILE = "lung-tissue-gene-cds.fa" # just lungs
 HOST_PATH = os.path.join("host", HOST_FILE)
 # ending token for tries
@@ -124,8 +126,8 @@ def make_targets(db=r, target_path=TARGET_PATH, target_id=TARGET_ID):
         kmer, n_conserved = count_conserved(alignment, conserved, index_of_target, start)
         if n_conserved > 0:
             print(f"{kmer} at {start} has {int(n_conserved)} conserved bases")
-            db.zadd("targets", {kmer: n_conserved})
-    most = db.zrevrangebyscore("targets", 9001, 0, withscores=True, start=0, num=1)[0]
+            db.zadd(TARGETS_KEY, {kmer: n_conserved})
+    most = db.zrevrangebyscore(TARGETS_KEY, 9001, 0, withscores=True, start=0, num=1)[0]
     print(
         f"the most conserved {K}mer {most[0].decode()} has {int(most[1])} bases conserved in {seq_ids}")
 
@@ -149,19 +151,19 @@ def count_conserved(alignment, conserved, index_of_target, start):
 
 
 def predict_side_effects(db=r, out_path=OUTFILE_PATH, ldb=leveldb):
-    targets = db.zrevrangebyscore("targets", 9001, 0)
+    targets = db.zrevrangebyscore(TARGETS_KEY, 9001, 0)
     for target in targets:
         t = target.decode()
         should_avoid = host_has(t, ldb)
         if should_avoid:
             continue
-        db.zadd("good_targets", {target: db.zscore("targets", t)})
+        db.zadd(GOOD_TARGETS_KEY, {target: db.zscore(TARGETS_KEY, t)})
     with open(out_path, "w+") as outfile:
-        for k, good_target in enumerate(db.zrevrangebyscore("good_targets", 90, 0)):
+        for k, good_target in enumerate(db.zrevrangebyscore(GOOD_TARGETS_KEY, 90, 0)):
             good_target_string = good_target.decode()
             print("good target", k, good_target_string)
             outfile.write(good_target_string + "\n")
-    print(f"saved {db.zcard('good_targets')} good targets at {out_path}")
+    print(f"saved {db.zcard(GOOD_TARGETS_KEY)} good targets at {out_path}")
 
 
 if __name__ == "__main__":
