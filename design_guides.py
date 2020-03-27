@@ -87,7 +87,7 @@ def _find(path: bytes, kmer: bytes, d: int, db, max_mismatches=CUTOFF, k=K):
         step = 1 if key is not base else 0
         if d + step > max_mismatches:
             return
-        for result in _find(path + bytes([key]), suffix, d + step, db, max_mismatches):
+        for result in _find(path + bytes([key]), suffix, d + step, db, max_mismatches, k):
             yield result
 
 
