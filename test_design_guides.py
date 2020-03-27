@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from Bio import SeqIO
 
-from design_guides import conserved_in_alignment, count_conserved, K, index
+from design_guides import conserved_in_alignment, count_conserved, K, index, host_has
 
 
 class FakeWriteBatch:
@@ -31,7 +31,7 @@ class FakeLevelDb:
         else:
             return default
 
-    def write_batch(self) -> FakeWriteBatch:
+    def write_batch(self, transaction=False) -> FakeWriteBatch:
         wb = FakeWriteBatch(self)
         return wb
 
@@ -60,7 +60,7 @@ class Test(TestCase):
         # TODO
         pass
 
-    def test_make_plasmids(self):
+    def test_find(self):
         # TODO
         pass
 
@@ -81,6 +81,7 @@ class Test(TestCase):
         fake_leveldb = FakeLevelDb()
         index('acctg', fake_leveldb)
         self.assertDictEqual(fake_leveldb.my_dict, {
+            b'': b'a',
             b'a': b'c',
             b'ac': b'c',
             b'acc': b't',
@@ -89,6 +90,7 @@ class Test(TestCase):
         for x in range(2):  # Should be idempotent
             index('accgc', fake_leveldb)
             self.assertDictEqual(fake_leveldb.my_dict, {
+                b'': b'a',
                 b'a': b'c',
                 b'ac': b'c',
                 b'acc': b'gt',
@@ -96,3 +98,12 @@ class Test(TestCase):
                 b'acct': b'g',
                 b'accgc': b'*',
                 b'acctg': b'*'})
+
+    def test_host_has(self):
+        fake_leveldb = FakeLevelDb()
+        index('acctg', fake_leveldb)
+        index('ggcat', fake_leveldb)
+        self.assertTrue(host_has('acctg', ldb=fake_leveldb, max_mismatches=1, k=5))
+        self.assertTrue(host_has('ccctg', ldb=fake_leveldb, max_mismatches=1, k=5))
+        self.assertFalse(host_has('ccctt', ldb=fake_leveldb, max_mismatches=1, k=5))
+        self.assertTrue(host_has('ccctt', ldb=fake_leveldb, max_mismatches=2, k=5))
