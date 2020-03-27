@@ -67,7 +67,7 @@ def index(kmer: str, db):
         return
     with db.write_batch(transaction=True) as wb:
         wb.put(kmer_bytes, END)
-        for x in reversed(range(1, len(kmer_bytes))):
+        for x in reversed(range(0, len(kmer_bytes))):
             prefix = kmer_bytes[:x]
             old_value = db.get(prefix, EMPTY)
             if kmer_bytes[x] in old_value:
@@ -77,26 +77,26 @@ def index(kmer: str, db):
                 wb.put(prefix, new_value)
 
 
-def _find(path, kmer, d, db, max_mismatches):
+def _find(path: bytes, kmer: bytes, d: int, db, max_mismatches=CUTOFF, k=K):
     if not kmer:
-        if len(path) is K:
+        if len(path) is k:
             yield (path, d)
         return
     base, suffix = kmer[0], kmer[1:]
-    for key in db.get(bytesu(path), bytes()):
-        step = 1 if key is not bytesu(base) else 0
+    for key in db.get(path, b''):
+        step = 1 if key is not base else 0
         if d + step > max_mismatches:
             return
-        for result in _find(path + key, suffix, d + step, db, max_mismatches):
+        for result in _find(path + bytes([key]), suffix, d + step, db, max_mismatches):
             yield result
 
 
-def find(kmer, db=leveldb, max_mismatches=CUTOFF):
-    return _find("", kmer, 0, db, max_mismatches)
+def find(kmer: str, db=leveldb, max_mismatches=CUTOFF, k=K):
+    return _find(b'', bytesu(kmer), 0, db, max_mismatches, k)
 
 
-def host_has(kmer, ldb=leveldb):
-    matches = list(find(kmer, ldb))
+def host_has(kmer: str, ldb=leveldb, max_mismatches=CUTOFF, k=K):
+    matches = list(find(kmer, ldb, max_mismatches, k))
     should_avoid = len(matches) > 0
     notice = "avoid" if should_avoid else "allow"
     print(notice, kmer, "matches", matches)
