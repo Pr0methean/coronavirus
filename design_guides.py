@@ -108,11 +108,10 @@ def make_hosts(input_path=HOST_PATH, db=r, ldb=leveldb):
         return
     with open(input_path, "r") as host_file:
         for rcount, record in enumerate(SeqIO.parse(host_file, "fasta")):
-            with ldb.write_batch(transaction=True) as wb:
-                for kmer in getKmers(record.seq.lower(), K, 1):
-                    kmer_string = str(kmer)
-                    db.sadd("hosts", kmer_string)
-                    index(kmer_string, ldb)
+            for kmer in getKmers(record.seq.lower(), K, 1):
+                kmer_string = str(kmer)
+                db.sadd("hosts", kmer_string)
+                index(kmer_string, ldb)
             print(rcount)
 
 
