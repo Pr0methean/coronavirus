@@ -22,7 +22,7 @@ HOST_PATH = os.path.join("host", HOST_FILE)
 END = bytesu("*")
 EMPTY = bytesu('')
 # path to pickle / save the trie
-REBUILD_TRIE = True
+REBUILD_TRIE = False
 TRIE_PATH = "trie"
 # path to alignment and id for the sequence to delete
 TARGET_PATH = os.path.join("alignments", "HKU1+MERS+SARS+nCoV-Consensus.clu")
@@ -57,7 +57,7 @@ def write_fasta(fasta_path: str, sequences):
 
 
 def getKmers(sequence: str, k: int, step: int):
-    for x in range(0, len(sequence) - k, step):
+    for x in range(0, len(sequence) - k + 1, step):
         yield sequence[x:x + k]
 
 
@@ -103,12 +103,10 @@ def host_has(kmer: str, ldb=leveldb, max_mismatches=CUTOFF, k=K):
     return should_avoid
 
 
-def make_hosts(input_path=HOST_PATH, db=r, ldb=leveldb):
-    if not REBUILD_TRIE:
-        return
+def make_hosts(input_path=HOST_PATH, db=r, ldb=leveldb, k=K):
     with open(input_path, "r") as host_file:
         for rcount, record in enumerate(SeqIO.parse(host_file, "fasta")):
-            for kmer in getKmers(record.seq.lower(), K, 1):
+            for kmer in getKmers(record.seq.lower(), k, 1):
                 kmer_string = str(kmer)
                 db.sadd("hosts", kmer_string)
                 index(kmer_string, ldb)
@@ -168,7 +166,8 @@ def predict_side_effects(db=r, out_path=OUTFILE_PATH, ldb=leveldb):
 if __name__ == "__main__":
     r = redis.Redis(host='localhost', port=6379)
     leveldb = plyvel.DB("db/", create_if_missing=True)
-    make_hosts(db=r, ldb=leveldb)
+    if REBUILD_TRIE:
+        make_hosts(db=r, ldb=leveldb)
     # test the trie lookup works
     for i in range(5):
         host_has(r.srandmember("hosts").decode(), ldb=leveldb)

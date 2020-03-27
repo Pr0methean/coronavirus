@@ -1,8 +1,9 @@
+import os
 from unittest import TestCase
 
 from Bio import SeqIO
 
-from design_guides import conserved_in_alignment, count_conserved, K, index, host_has
+from design_guides import conserved_in_alignment, count_conserved, K, index, host_has, make_hosts, getKmers
 
 
 class FakeWriteBatch:
@@ -36,8 +37,21 @@ class FakeLevelDb:
         return wb
 
 
+class FakeRedis:
+    def __init__(self):
+        self.my_dict = {}
+
+    def sadd(self, key: str, value: str):
+        if key not in self.my_dict:
+            self.my_dict[key] = {value}
+        else:
+            self.my_dict[key].add(value)
+
+
 # noinspection SpellCheckingInspection
 class Test(TestCase):
+    test_host_path = os.path.join("host", "unit_test_host.fa")
+
     alignment = [SeqIO.SeqRecord(i) for i in [
         'ATTAAAGGTTTATCCCTTCCCAGGTAGCAAACCACCCAACTGTCGATCTCTTGTAGGTCTGTCCTCTAAA',
         'CGAACTTGAAAATCTGTGTGCAGGTAGCTCGGCTCCATGCTGTCGACACTCACGCAGTATAACTAATAAC',
@@ -48,9 +62,9 @@ class Test(TestCase):
         '0000000100000100000011111110000000100000111111000000000010000010000000')]
     alignment_length = len(alignment[0])
 
-    def test_make_hosts(self):
-        # TODO
-        pass
+    def test_get_kmers(self):
+        self.assertEqual(list(getKmers('acacaacc', 5, 1)),
+                         ['acaca', 'cacaa', 'acaac', 'caacc'])
 
     def test_make_targets(self):
         # TODO
@@ -107,3 +121,48 @@ class Test(TestCase):
         self.assertTrue(host_has('ccctg', ldb=fake_leveldb, max_mismatches=1, k=5))
         self.assertFalse(host_has('ccctt', ldb=fake_leveldb, max_mismatches=1, k=5))
         self.assertTrue(host_has('ccctt', ldb=fake_leveldb, max_mismatches=2, k=5))
+
+    def test_make_hosts(self):
+        fake_leveldb = FakeLevelDb()
+        fake_redis = FakeRedis()
+        make_hosts(input_path=self.test_host_path, db=fake_redis, ldb=fake_leveldb, k=5)
+        self.assertEqual(fake_leveldb.my_dict, {
+            b'': b'acgt',
+            b'a': b'cg',
+            b'ac': b'a',
+            b'aca': b'ac',
+            b'acaa': b'c',
+            b'acaac': b'*',
+            b'acac': b'a',
+            b'acaca': b'*',
+            b'ag': b'g',
+            b'agg': b't',
+            b'aggt': b'a',
+            b'aggta': b'*',
+            b'c': b'a',
+            b'ca': b'ac',
+            b'caa': b'c',
+            b'caac': b'c',
+            b'caacc': b'*',
+            b'cac': b'a',
+            b'caca': b'a',
+            b'cacaa': b'*',
+            b'g': b'gt',
+            b'gg': b't',
+            b'ggt': b'a',
+            b'ggta': b'g',
+            b'ggtag': b'*',
+            b'gt': b'a',
+            b'gta': b'g',
+            b'gtag': b'a',
+            b'gtaga': b'*',
+            b't': b'a',
+            b'ta': b'g',
+            b'tag': b'g',
+            b'tagg': b't',
+            b'taggt': b'*',
+        })
+        self.assertEqual(fake_leveldb.my_dict["hosts"], {
+            'acaac', 'cacaa', 'acaac', 'caacc',
+            'taggt', 'aggta', 'ggtag', 'gtaga',
+        })
