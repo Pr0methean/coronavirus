@@ -50,7 +50,7 @@ class FakeRedis:
 
 # noinspection SpellCheckingInspection
 class Test(TestCase):
-    test_host_path = os.path.join("host", "unit_test_host.fa")
+    test_host_path = os.path.join("testdata", "unit_test_host.fa")
 
     alignment = [SeqIO.SeqRecord(i) for i in [
         'ATTAAAGGTTTATCCCTTCCCAGGTAGCAAACCACCCAACTGTCGATCTCTTGTAGGTCTGTCCTCTAAA',
