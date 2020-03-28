@@ -51,6 +51,10 @@ class FakeRedis:
         else:
             return self.my_dict[key].add(value)
 
+    # Only used to check for presence or absence of key
+    def sscan(self, key: str):
+        return key in self.my_dict
+
     def zadd(self, key: str, values: dict):
         if key not in self.my_dict:
             self.my_dict[key] = copy.copy(values)
