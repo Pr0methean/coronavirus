@@ -4,6 +4,7 @@ import tempfile
 from unittest import TestCase
 
 from Bio import SeqIO
+from redis import Redis
 
 from design_guides import conserved_in_alignment, count_conserved, K, index, host_has, make_hosts, getKmers, find, \
     make_targets, bytesu, predict_side_effects
@@ -44,7 +45,7 @@ class FakeRedis:
     def __init__(self):
         self.my_dict = {}
 
-    def sadd(self, key: str, value: str) -> bool:
+    def sadd(self, key: str, value: bytes) -> bool:
         if key not in self.my_dict:
             self.my_dict[key] = {value}
             return True
@@ -87,6 +88,9 @@ class FakeRedis:
         else:
             return None
 
+    def sscan_iter(self, name: str):
+        return iter(self.my_dict[name])
+
 
 # noinspection SpellCheckingInspection,PyTypeChecker
 class Test(TestCase):
@@ -121,6 +125,20 @@ class Test(TestCase):
             count_conserved([SeqIO.SeqRecord("ggtttatcccttcccaggtagcaaacc-")], "ggtttatcccttcccaggtagcaaacc-", 0, 0),
             ("", 0))
 
+    def flatten_redis(self, redis: Redis):
+        out = dict()
+        for key in redis.scan_iter():
+            out[key] = set(redis.sscan_iter(key))
+        return out
+
+    @staticmethod
+    def get_test_redis():
+        return Redis(host='localhost', port=6379, db=14)
+
+    @staticmethod
+    def get_test_trie_redis():
+        return Redis(host='localhost', port=6379, db=15)
+
     def test_index(self):
         fake_redis = FakeRedis()
         index('acctg', fake_redis)
@@ -153,59 +171,62 @@ class Test(TestCase):
         self.assertEqual(len(list(find('acgcg', tdb=fake_redis, max_mismatches=1, k=5))), 0)
 
     def test_host_has(self):
-        fake_redis = FakeRedis()
-        index('acctg', fake_redis)
-        index('ggcat', fake_redis)
-        self.assertTrue(host_has('acctg', tdb=fake_redis, max_mismatches=1, k=5))
-        self.assertTrue(host_has('ccctg', tdb=fake_redis, max_mismatches=1, k=5))
-        self.assertFalse(host_has('ccctt', tdb=fake_redis, max_mismatches=1, k=5))
-        self.assertTrue(host_has('ccctt', tdb=fake_redis, max_mismatches=2, k=5))
+        test_trie_redis = self.get_test_trie_redis()
+        test_trie_redis.flushdb()
+        index('acctg', test_trie_redis)
+        index('ggcat', test_trie_redis)
+        self.assertTrue(host_has('acctg', tdb=test_trie_redis, max_mismatches=1, k=5))
+        self.assertTrue(host_has('ccctg', tdb=test_trie_redis, max_mismatches=1, k=5))
+        self.assertFalse(host_has('ccctt', tdb=test_trie_redis, max_mismatches=1, k=5))
+        self.assertTrue(host_has('ccctt', tdb=test_trie_redis, max_mismatches=2, k=5))
 
     def test_make_hosts(self):
         test_host_path = os.path.join("testdata", "unit_test_host.fa")
-        fake_trie_redis = FakeRedis()
-        fake_redis = FakeRedis()
-        make_hosts(input_path=test_host_path, db=fake_redis, tdb=fake_trie_redis, k=5)
+        test_trie_redis = self.get_test_trie_redis()
+        test_redis = self.get_test_redis()
+        test_trie_redis.flushdb()
+        test_redis.flushdb()
+        make_hosts(input_path=test_host_path, db=self.get_test_redis, tdb=self.get_test_trie_redis, k=5)
         self.assertEqual({
-            '': {'a', 'c', 'g', 't'},
-            'a': {'c', 'g'},
-            'ac': {'a'},
-            'aca': {'a', 'c'},
-            'acaa': {'c'},
-            'acaac': {'*'},
-            'acac': {'a'},
-            'acaca': {'*'},
-            'ag': {'g'},
-            'agg': {'t'},
-            'aggt': {'a'},
-            'aggta': {'*'},
-            'c': {'a'},
-            'ca': {'a', 'c'},
-            'caa': {'c'},
-            'caac': {'c'},
-            'caacc': {'*'},
-            'cac': {'a'},
-            'caca': {'a'},
-            'cacaa': {'*'},
-            'g': {'g', 't'},
-            'gg': {'t'},
-            'ggt': {'a'},
-            'ggta': {'g'},
-            'ggtag': {'*'},
-            'gt': {'a'},
-            'gta': {'g'},
-            'gtag': {'a'},
-            'gtaga': {'*'},
-            't': {'a'},
-            'ta': {'g'},
-            'tag': {'g'},
-            'tagg': {'t'},
-            'taggt': {'*'},
-        }, fake_trie_redis.my_dict)
+            b'': {b'a', b'c', b'g', b't'},
+            b'a': {b'c', b'g'},
+            b'ac': {b'a'},
+            b'aca': {b'a', b'c'},
+            b'acaa': {b'c'},
+            b'acaac': {b'*'},
+            b'acac': {b'a'},
+            b'acaca': {b'*'},
+            b'ag': {b'g'},
+            b'agg': {b't'},
+            b'aggt': {b'a'},
+            b'aggta': {b'*'},
+            b'c': {b'a'},
+            b'ca': {b'a', b'c'},
+            b'caa': {b'c'},
+            b'caac': {b'c'},
+            b'caacc': {b'*'},
+            b'cac': {b'a'},
+            b'caca': {b'a'},
+            b'cacaa': {b'*'},
+            b'g': {b'g', b't'},
+            b'gg': {b't'},
+            b'ggt': {b'a'},
+            b'ggta': {b'g'},
+            b'ggtag': {b'*'},
+            b'gt': {b'a'},
+            b'gta': {b'g'},
+            b'gtag': {b'a'},
+            b'gtaga': {b'*'},
+            b't': {b'a'},
+            b'ta': {b'g'},
+            b'tag': {b'g'},
+            b'tagg': {b't'},
+            b'taggt': {b'*'},
+        }, self.flatten_redis(test_trie_redis))
         self.assertEqual({
-            'acaca', 'cacaa', 'acaac', 'caacc',
-            'taggt', 'aggta', 'ggtag', 'gtaga',
-        }, fake_redis.my_dict["hosts"])
+            b'acaca', b'cacaa', b'acaac', b'caacc',
+            b'taggt', b'aggta', b'ggtag', b'gtaga',
+        }, set(test_redis.sscan_iter("hosts")))
 
     def test_make_targets(self):
         fake_redis = FakeRedis()

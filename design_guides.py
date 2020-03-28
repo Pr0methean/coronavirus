@@ -3,6 +3,7 @@ import os
 from Bio import AlignIO, SeqIO
 from Bio.Seq import Seq
 from redis import Redis
+from multiprocessing import Pool
 
 
 def bytesu(string):
@@ -35,8 +36,10 @@ TAIL_PATH = os.path.join("parts", "tail.fa")
 # path for output
 OUTFILE_PATH = os.path.join("guides", "trie_guides.csv")
 
-r = None
-leveldb = None
+
+global my_db
+global my_tdb
+global my_k
 
 
 # helpers
@@ -64,16 +67,16 @@ def index(kmer: str, db: Redis):
     db.sadd(kmer, '*')
     for x in reversed(range(0, len(kmer))):
         prefix = kmer[:x]
-        if not db.sadd(prefix, kmer[x]):
+        if not db.sadd(prefix, bytesu(kmer[x])):
             return
 
 
-def _find(path: str, kmer: str, d: int, db: Redis, max_mismatches=CUTOFF, k=K):
+def _find(path: bytes, kmer: bytes, d: int, db: Redis, max_mismatches=CUTOFF, k=K):
     if not kmer:
         if len(path) is k:
             yield (path, d)
         return
-    branches = db.get(path)
+    branches = db.sscan_iter(str(path, "UTF-8"))
     if not branches:
         return
     base, suffix = kmer[0], kmer[1:]
@@ -86,7 +89,7 @@ def _find(path: str, kmer: str, d: int, db: Redis, max_mismatches=CUTOFF, k=K):
 
 
 def find(kmer: str, tdb: Redis, max_mismatches=CUTOFF, k=K):
-    return _find('', kmer, 0, tdb, max_mismatches, k)
+    return _find(b'', bytesu(kmer), 0, tdb, max_mismatches, k)
 
 
 def host_has(kmer: str, tdb: Redis, max_mismatches=CUTOFF, k=K):
@@ -97,17 +100,29 @@ def host_has(kmer: str, tdb: Redis, max_mismatches=CUTOFF, k=K):
     return should_avoid
 
 
-def make_hosts(input_path: str, db: Redis, tdb: Redis, k=K):
-    with open(input_path, "r") as host_file:
-        for rcount, record in enumerate(SeqIO.parse(host_file, "fasta")):
-            for kmer in getKmers(record.seq.lower(), k, 1):
-                kmer_string = str(kmer)
-                db.sadd("hosts", kmer_string)
-                index(kmer_string, tdb)
-            print(rcount)
+def index_record(record_pair):
+    (record_count, record) = record_pair
+    for kmer in getKmers(record.seq.lower(), my_k, 1):
+        kmer_string = str(kmer)
+        my_db.sadd("hosts", bytesu(kmer_string))
+        index(kmer_string, my_tdb)
+    print(record_count)
 
 
-def make_targets(db=r, target_path=TARGET_PATH, target_id=TARGET_ID, k=K):
+def init_subprocess(db, tdb, k):
+    global my_db, my_tdb, my_k
+    my_db = db()
+    my_tdb = tdb()
+    my_k = k
+
+
+def make_hosts(input_path: str, db, tdb, k=K):
+    with Pool(initializer=lambda: init_subprocess(db, tdb, k)) as pool, open(input_path, "r") as host_file:
+        records = enumerate(SeqIO.parse(host_file, "fasta"))
+        pool.map(index_record, records)
+
+
+def make_targets(db, target_path=TARGET_PATH, target_id=TARGET_ID, k=K):
     targets_key = f"targets_{k}"
     alignment = AlignIO.read(target_path, "clustal")
     seq_ids = [seq.id for seq in alignment]
@@ -159,13 +174,14 @@ def predict_side_effects(db: Redis, out_path: str, tdb: Redis, k=K, max_mismatch
 
 
 if __name__ == "__main__":
-    r = Redis(host='localhost', port=6379, db=0)
-    r_for_trie = Redis(host='localhost', port=6379, db=1)
+    get_r = lambda: Redis(host='localhost', port=6379, db=0)
+    r = get_r()
+    get_r_for_trie = lambda: Redis(host='localhost', port=6379, db=1)
+    r_for_trie = get_r_for_trie()
     if REBUILD_TRIE:
-        make_hosts(HOST_PATH, db=r, tdb=r_for_trie)
+        make_hosts(HOST_PATH, db=get_r, tdb=get_r_for_trie)
     # test the trie lookup works
     for i in range(5):
         host_has(r.srandmember("hosts").decode(), tdb=r_for_trie)
     make_targets(db=r)
     predict_side_effects(db=r, tdb=r_for_trie, out_path=OUTFILE_PATH)
-    leveldb.close()
