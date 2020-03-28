@@ -61,7 +61,7 @@ def getKmers(sequence: str, k: int, step: int):
 
 
 def index(kmer: str, db: Redis):
-    if db.sscan(kmer):
+    if db.exists(kmer):
         return
     db.sadd(kmer, '*')
     for x in reversed(range(0, len(kmer))):
