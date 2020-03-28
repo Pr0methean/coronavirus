@@ -1,9 +1,11 @@
+import copy
 import os
 from unittest import TestCase
 
 from Bio import SeqIO
 
-from design_guides import conserved_in_alignment, count_conserved, K, index, host_has, make_hosts, getKmers
+from design_guides import conserved_in_alignment, count_conserved, K, index, host_has, make_hosts, getKmers, find, \
+    make_targets, bytesu
 
 
 class FakeWriteBatch:
@@ -47,11 +49,33 @@ class FakeRedis:
         else:
             self.my_dict[key].add(value)
 
+    def zadd(self, key: str, values: dict):
+        if key not in self.my_dict:
+            self.my_dict[key] = copy.copy(values)
+        else:
+            self.my_dict[key].update(values)
+
+    def _zrevrangebyscore(self, name: str, max, min, start=None, num=None,
+                          withscores=False, score_cast_func=float):
+        items_by_score = sorted(self.my_dict[name].items(), key=lambda item: -item[1])
+        if start:
+            items_by_score = items_by_score[start:]
+        if num:
+            items_by_score = items_by_score[:num]
+        for key, score in items_by_score:
+            if min <= score <= max:
+                if withscores:
+                    yield bytesu(key), score_cast_func(score)
+                else:
+                    yield bytesu(key)
+
+    def zrevrangebyscore(self, name: str, max, min, start=None, num=None,
+                         withscores=False, score_cast_func=float):
+        return list(self._zrevrangebyscore(name, max, min, start, num, withscores, score_cast_func))
+
 
 # noinspection SpellCheckingInspection
 class Test(TestCase):
-    test_host_path = os.path.join("testdata", "unit_test_host.fa")
-
     alignment = [SeqIO.SeqRecord(i) for i in [
         'ATTAAAGGTTTATCCCTTCCCAGGTAGCAAACCACCCAACTGTCGATCTCTTGTAGGTCTGTCCTCTAAA',
         'CGAACTTGAAAATCTGTGTGCAGGTAGCTCGGCTCCATGCTGTCGACACTCACGCAGTATAACTAATAAC',
@@ -65,18 +89,6 @@ class Test(TestCase):
     def test_get_kmers(self):
         self.assertEqual(list(getKmers('acacaacc', 5, 1)),
                          ['acaca', 'cacaa', 'acaac', 'caacc'])
-
-    def test_make_targets(self):
-        # TODO
-        pass
-
-    def test_predict_side_effects(self):
-        # TODO
-        pass
-
-    def test_find(self):
-        # TODO
-        pass
 
     def test_conserved_in_alignment(self):
         self.assertEqual(conserved_in_alignment(self.alignment, self.alignment_length), self.conserved)
@@ -113,6 +125,14 @@ class Test(TestCase):
                 b'accgc': b'*',
                 b'acctg': b'*'})
 
+    def test_find(self):
+        fake_leveldb = FakeLevelDb()
+        index('acctg', fake_leveldb)
+        index('ggcat', fake_leveldb)
+        self.assertEqual(len(list(find('acctg', db=fake_leveldb, max_mismatches=1, k=5))), 1)
+        self.assertEqual(len(list(find('acgtg', db=fake_leveldb, max_mismatches=1, k=5))), 1)
+        self.assertEqual(len(list(find('acgcg', db=fake_leveldb, max_mismatches=1, k=5))), 0)
+
     def test_host_has(self):
         fake_leveldb = FakeLevelDb()
         index('acctg', fake_leveldb)
@@ -123,9 +143,10 @@ class Test(TestCase):
         self.assertTrue(host_has('ccctt', ldb=fake_leveldb, max_mismatches=2, k=5))
 
     def test_make_hosts(self):
+        test_host_path = os.path.join("testdata", "unit_test_host.fa")
         fake_leveldb = FakeLevelDb()
         fake_redis = FakeRedis()
-        make_hosts(input_path=self.test_host_path, db=fake_redis, ldb=fake_leveldb, k=5)
+        make_hosts(input_path=test_host_path, db=fake_redis, ldb=fake_leveldb, k=5)
         self.assertEqual(fake_leveldb.my_dict, {
             b'': b'acgt',
             b'a': b'cg',
@@ -162,7 +183,20 @@ class Test(TestCase):
             b'tagg': b't',
             b'taggt': b'*',
         })
-        self.assertEqual(fake_leveldb.my_dict["hosts"], {
-            'acaac', 'cacaa', 'acaac', 'caacc',
+        self.assertEqual({
+            'acaca', 'cacaa', 'acaac', 'caacc',
             'taggt', 'aggta', 'ggtag', 'gtaga',
-        })
+        }, fake_redis.my_dict["hosts"])
+
+    def test_make_targets(self):
+        fake_redis = FakeRedis()
+        test_target_path = os.path.join("testdata", "unit_test_target.clu")
+        make_targets(db=fake_redis, target_path=test_target_path, target_id="nCoV", k=28)
+        self.assertEqual(list(fake_redis.zrevrangebyscore('targets_28', 9001, 0, withscores=True)), [
+            (b"caaccaactttcgatctcttggtagatc", 11.0),
+            (b"cggtcgtcgacaggcaggtagtaactcg", 9.0),
+        ])
+
+    def test_predict_side_effects(self):
+        # TODO
+        pass

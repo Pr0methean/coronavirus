@@ -12,7 +12,6 @@ def bytesu(string):
 
 # length of the CRISPR guide RNA
 K = 28
-TARGETS_KEY = f"targets_{K}"
 GOOD_TARGETS_KEY = f"good_targets_{K}"
 # path to a fasta file with host sequences to avoid
 HOST_FILE = "GCF_000001405.39_GRCh38.p13_rna.fna" # all RNA in human transcriptome
@@ -113,18 +112,19 @@ def make_hosts(input_path=HOST_PATH, db=r, ldb=leveldb, k=K):
             print(rcount)
 
 
-def make_targets(db=r, target_path=TARGET_PATH, target_id=TARGET_ID):
+def make_targets(db=r, target_path=TARGET_PATH, target_id=TARGET_ID, k=K):
+    targets_key = f"targets_{K}"
     alignment = AlignIO.read(target_path, "clustal")
     seq_ids = [seq.id for seq in alignment]
     index_of_target = seq_ids.index(target_id)
     alignment_length = alignment.get_alignment_length()
     conserved = conserved_in_alignment(alignment, alignment_length)
-    for start in range(alignment_length - K):
-        kmer, n_conserved = count_conserved(alignment, conserved, index_of_target, start)
+    for start in range(alignment_length - k + 1):
+        kmer, n_conserved = count_conserved(alignment, conserved, index_of_target, start, k)
         if n_conserved > 0:
             print(f"{kmer} at {start} has {int(n_conserved)} conserved bases")
-            db.zadd(TARGETS_KEY, {kmer: n_conserved})
-    most = db.zrevrangebyscore(TARGETS_KEY, 9001, 0, withscores=True, start=0, num=1)[0]
+            db.zadd(targets_key, {kmer: n_conserved})
+    most = db.zrevrangebyscore(targets_key, 9001, 0, withscores=True, start=0, num=1)[0]
     print(
         f"the most conserved {K}mer {most[0].decode()} has {int(most[1])} bases conserved in {seq_ids}")
 
@@ -134,16 +134,16 @@ def conserved_in_alignment(alignment, alignment_length):
         [seq[i] for seq in alignment]) else 0 for i in range(alignment_length)]
 
 
-def count_conserved(alignment, conserved, index_of_target, start):
+def count_conserved(alignment, conserved, index_of_target, start, k=K):
     if not all(conserved[start + OFFSET_1:start + OFFSET_2]):
         kmer = ""
         n_conserved = 0
     else:
-        kmer = str(alignment[index_of_target][start:start + K].seq).lower()
+        kmer = str(alignment[index_of_target][start:start + k].seq).lower()
         if "-" in kmer:
             n_conserved = 0
         else:
-            n_conserved = sum(conserved[start:start + K])
+            n_conserved = sum(conserved[start:start + k])
     return kmer, n_conserved
 
 
