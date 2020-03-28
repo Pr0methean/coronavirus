@@ -135,14 +135,12 @@ def conserved_in_alignment(alignment, alignment_length):
 
 def count_conserved(alignment, conserved, index_of_target, start, k=K):
     if not all(conserved[start + OFFSET_1:start + OFFSET_2]):
-        kmer = ""
-        n_conserved = 0
+        return "", 0
     else:
         kmer = str(alignment[index_of_target][start:start + k].seq).lower()
         if "-" in kmer:
-            n_conserved = 0
-        else:
-            n_conserved = sum(conserved[start:start + k])
+            return "", 0
+        n_conserved = sum(conserved[start:start + k])
     return kmer, n_conserved
 
 

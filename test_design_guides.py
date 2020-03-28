@@ -108,6 +108,8 @@ class Test(TestCase):
         # Has bases 15-21 conserved
         self.assertEqual(count_conserved(self.alignment, self.conserved, 0, 6),
                          ("ggtttatcccttcccaggtagcaaacca", 9))
+        # Has dashes
+        self.assertEqual(count_conserved([SeqIO.SeqRecord("ggtttatcccttcccaggtagcaaacc-")], "ggtttatcccttcccaggtagcaaacc-", 0, 0), ("", 0))
 
     def test_index(self):
         fake_leveldb = FakeLevelDb()
