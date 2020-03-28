@@ -1,10 +1,12 @@
 import os
+from functools import lru_cache
 
 from Bio import AlignIO, SeqIO
 from Bio.Seq import Seq
 from redis import Redis
 
 
+@lru_cache()
 def bytesu(string):
     return bytes(string, "UTF-8")
 
@@ -124,11 +126,13 @@ def make_targets(db=r, target_path=TARGET_PATH, target_id=TARGET_ID, k=K):
         f"the most conserved {K}mer {most[0].decode()} has {int(most[1])} bases conserved in {seq_ids}")
 
 
+@lru_cache()
 def conserved_in_alignment(alignment, alignment_length):
     return [1 if all_equal(
         [seq[i] for seq in alignment]) else 0 for i in range(alignment_length)]
 
 
+@lru_cache()
 def count_conserved(alignment, conserved, index_of_target, start, k=K):
     if not all(conserved[start + OFFSET_1:start + OFFSET_2]):
         return "", 0
