@@ -1,11 +1,12 @@
 import copy
 import os
+import tempfile
 from unittest import TestCase
 
 from Bio import SeqIO
 
 from design_guides import conserved_in_alignment, count_conserved, K, index, host_has, make_hosts, getKmers, find, \
-    make_targets, bytesu
+    make_targets, bytesu, predict_side_effects
 
 
 class FakeWriteBatch:
@@ -73,6 +74,11 @@ class FakeRedis:
                          withscores=False, score_cast_func=float):
         return list(self._zrevrangebyscore(name, max, min, start, num, withscores, score_cast_func))
 
+    def zscore(self, name: str, key: str):
+        return self.my_dict[name][key]
+
+    def zcard(self, name: str):
+        return len(self.my_dict[name])
 
 # noinspection SpellCheckingInspection
 class Test(TestCase):
@@ -115,7 +121,7 @@ class Test(TestCase):
             b'acctg': b'*'})
         for x in range(2):  # Should be idempotent
             index('accgc', fake_leveldb)
-            self.assertDictEqual(fake_leveldb.my_dict, {
+            self.assertDictEqual({
                 b'': b'a',
                 b'a': b'c',
                 b'ac': b'c',
@@ -123,7 +129,8 @@ class Test(TestCase):
                 b'accg': b'c',
                 b'acct': b'g',
                 b'accgc': b'*',
-                b'acctg': b'*'})
+                b'acctg': b'*',
+            }, fake_leveldb.my_dict)
 
     def test_find(self):
         fake_leveldb = FakeLevelDb()
@@ -147,7 +154,7 @@ class Test(TestCase):
         fake_leveldb = FakeLevelDb()
         fake_redis = FakeRedis()
         make_hosts(input_path=test_host_path, db=fake_redis, ldb=fake_leveldb, k=5)
-        self.assertEqual(fake_leveldb.my_dict, {
+        self.assertEqual({
             b'': b'acgt',
             b'a': b'cg',
             b'ac': b'a',
@@ -182,7 +189,7 @@ class Test(TestCase):
             b'tag': b'g',
             b'tagg': b't',
             b'taggt': b'*',
-        })
+        }, fake_leveldb.my_dict)
         self.assertEqual({
             'acaca', 'cacaa', 'acaac', 'caacc',
             'taggt', 'aggta', 'ggtag', 'gtaga',
@@ -192,11 +199,24 @@ class Test(TestCase):
         fake_redis = FakeRedis()
         test_target_path = os.path.join("testdata", "unit_test_target.clu")
         make_targets(db=fake_redis, target_path=test_target_path, target_id="nCoV", k=28)
-        self.assertEqual(list(fake_redis.zrevrangebyscore('targets_28', 9001, 0, withscores=True)), [
+        self.assertEqual([
             (b"caaccaactttcgatctcttggtagatc", 11.0),
             (b"cggtcgtcgacaggcaggtagtaactcg", 9.0),
-        ])
+        ], list(fake_redis.zrevrangebyscore('targets_28', 9001, 0, withscores=True)))
 
     def test_predict_side_effects(self):
-        # TODO
-        pass
+        fake_redis = FakeRedis()
+        fake_leveldb = FakeLevelDb()
+        fake_redis.zadd('targets_5', {
+            "caacc": 5.0,
+            "cggtc": 4.0
+        })
+        index("gggtc", fake_leveldb)
+        index("atctg", fake_leveldb)
+        name = None
+        with tempfile.NamedTemporaryFile(delete=False) as outfile:
+            name = outfile.name
+            predict_side_effects(db=fake_redis, out_path=outfile.name, ldb=fake_leveldb, k=5,
+                                 max_mismatches=1)
+        with open(name, "r") as outfile:
+            self.assertEqual(["caacc\n"], list(outfile.readlines()))

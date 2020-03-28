@@ -12,7 +12,6 @@ def bytesu(string):
 
 # length of the CRISPR guide RNA
 K = 28
-GOOD_TARGETS_KEY = f"good_targets_{K}"
 # path to a fasta file with host sequences to avoid
 HOST_FILE = "GCF_000001405.39_GRCh38.p13_rna.fna" # all RNA in human transcriptome
 # HOST_FILE = "lung-tissue-gene-cds.fa" # just lungs
@@ -113,7 +112,7 @@ def make_hosts(input_path=HOST_PATH, db=r, ldb=leveldb, k=K):
 
 
 def make_targets(db=r, target_path=TARGET_PATH, target_id=TARGET_ID, k=K):
-    targets_key = f"targets_{K}"
+    targets_key = f"targets_{k}"
     alignment = AlignIO.read(target_path, "clustal")
     seq_ids = [seq.id for seq in alignment]
     index_of_target = seq_ids.index(target_id)
@@ -147,20 +146,22 @@ def count_conserved(alignment, conserved, index_of_target, start, k=K):
     return kmer, n_conserved
 
 
-def predict_side_effects(db=r, out_path=OUTFILE_PATH, ldb=leveldb):
-    targets = db.zrevrangebyscore(TARGETS_KEY, 9001, 0)
+def predict_side_effects(db=r, out_path=OUTFILE_PATH, ldb=leveldb, k=K, max_mismatches=CUTOFF):
+    targets_key = f"targets_{k}"
+    good_targets_key = f"good_targets_{k}"
+    targets = db.zrevrangebyscore(targets_key, 9001, 0)
     for target in targets:
         t = target.decode()
-        should_avoid = host_has(t, ldb)
+        should_avoid = host_has(t, ldb, max_mismatches, k)
         if should_avoid:
             continue
-        db.zadd(GOOD_TARGETS_KEY, {target: db.zscore(TARGETS_KEY, t)})
+        db.zadd(good_targets_key, {t: db.zscore(targets_key, t)})
     with open(out_path, "w+") as outfile:
-        for k, good_target in enumerate(db.zrevrangebyscore(GOOD_TARGETS_KEY, 90, 0)):
+        for k, good_target in enumerate(db.zrevrangebyscore(good_targets_key, 90, 0)):
             good_target_string = good_target.decode()
             print("good target", k, good_target_string)
             outfile.write(good_target_string + "\n")
-    print(f"saved {db.zcard(GOOD_TARGETS_KEY)} good targets at {out_path}")
+    print(f"saved {db.zcard(good_targets_key)} good targets at {out_path}")
 
 
 if __name__ == "__main__":
