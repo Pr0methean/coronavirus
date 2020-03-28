@@ -44,11 +44,12 @@ class FakeRedis:
     def __init__(self):
         self.my_dict = {}
 
-    def sadd(self, key: str, value: str):
+    def sadd(self, key: str, value: str) -> bool:
         if key not in self.my_dict:
             self.my_dict[key] = {value}
+            return True
         else:
-            self.my_dict[key].add(value)
+            return self.my_dict[key].add(value)
 
     def zadd(self, key: str, values: dict):
         if key not in self.my_dict:
@@ -80,7 +81,14 @@ class FakeRedis:
     def zcard(self, name: str):
         return len(self.my_dict[name])
 
-# noinspection SpellCheckingInspection
+    def get(self, name: str):
+        if name in self.my_dict:
+            return copy.copy(self.my_dict[name])
+        else:
+            return None
+
+
+# noinspection SpellCheckingInspection,PyTypeChecker
 class Test(TestCase):
     alignment = [SeqIO.SeqRecord(i) for i in [
         'ATTAAAGGTTTATCCCTTCCCAGGTAGCAAACCACCCAACTGTCGATCTCTTGTAGGTCTGTCCTCTAAA',
@@ -109,89 +117,91 @@ class Test(TestCase):
         self.assertEqual(count_conserved(self.alignment, self.conserved, 0, 6),
                          ("ggtttatcccttcccaggtagcaaacca", 9))
         # Has dashes
-        self.assertEqual(count_conserved([SeqIO.SeqRecord("ggtttatcccttcccaggtagcaaacc-")], "ggtttatcccttcccaggtagcaaacc-", 0, 0), ("", 0))
+        self.assertEqual(
+            count_conserved([SeqIO.SeqRecord("ggtttatcccttcccaggtagcaaacc-")], "ggtttatcccttcccaggtagcaaacc-", 0, 0),
+            ("", 0))
 
     def test_index(self):
-        fake_leveldb = FakeLevelDb()
-        index('acctg', fake_leveldb)
-        self.assertDictEqual(fake_leveldb.my_dict, {
-            b'': b'a',
-            b'a': b'c',
-            b'ac': b'c',
-            b'acc': b't',
-            b'acct': b'g',
-            b'acctg': b'*'})
+        fake_redis = FakeRedis()
+        index('acctg', fake_redis)
+        self.assertDictEqual(fake_redis.my_dict, {
+            '': {'a'},
+            'a': {'c'},
+            'ac': {'c'},
+            'acc': {'t'},
+            'acct': {'g'},
+            'acctg': {'*'}})
         for x in range(2):  # Should be idempotent
-            index('accgc', fake_leveldb)
+            index('accgc', fake_redis)
             self.assertDictEqual({
-                b'': b'a',
-                b'a': b'c',
-                b'ac': b'c',
-                b'acc': b'gt',
-                b'accg': b'c',
-                b'acct': b'g',
-                b'accgc': b'*',
-                b'acctg': b'*',
-            }, fake_leveldb.my_dict)
+                '': {'a'},
+                'a': {'c'},
+                'ac': {'c'},
+                'acc': {'g', 't'},
+                'accg': {'c'},
+                'acct': {'g'},
+                'accgc': {'*'},
+                'acctg': {'*'},
+            }, fake_redis.my_dict)
 
     def test_find(self):
-        fake_leveldb = FakeLevelDb()
-        index('acctg', fake_leveldb)
-        index('ggcat', fake_leveldb)
-        self.assertEqual(len(list(find('acctg', db=fake_leveldb, max_mismatches=1, k=5))), 1)
-        self.assertEqual(len(list(find('acgtg', db=fake_leveldb, max_mismatches=1, k=5))), 1)
-        self.assertEqual(len(list(find('acgcg', db=fake_leveldb, max_mismatches=1, k=5))), 0)
+        fake_redis = FakeRedis()
+        index('acctg', fake_redis)
+        index('ggcat', fake_redis)
+        self.assertEqual(len(list(find('acctg', tdb=fake_redis, max_mismatches=1, k=5))), 1)
+        self.assertEqual(len(list(find('acgtg', tdb=fake_redis, max_mismatches=1, k=5))), 1)
+        self.assertEqual(len(list(find('acgcg', tdb=fake_redis, max_mismatches=1, k=5))), 0)
 
     def test_host_has(self):
-        fake_leveldb = FakeLevelDb()
-        index('acctg', fake_leveldb)
-        index('ggcat', fake_leveldb)
-        self.assertTrue(host_has('acctg', ldb=fake_leveldb, max_mismatches=1, k=5))
-        self.assertTrue(host_has('ccctg', ldb=fake_leveldb, max_mismatches=1, k=5))
-        self.assertFalse(host_has('ccctt', ldb=fake_leveldb, max_mismatches=1, k=5))
-        self.assertTrue(host_has('ccctt', ldb=fake_leveldb, max_mismatches=2, k=5))
+        fake_redis = FakeRedis()
+        index('acctg', fake_redis)
+        index('ggcat', fake_redis)
+        self.assertTrue(host_has('acctg', tdb=fake_redis, max_mismatches=1, k=5))
+        self.assertTrue(host_has('ccctg', tdb=fake_redis, max_mismatches=1, k=5))
+        self.assertFalse(host_has('ccctt', tdb=fake_redis, max_mismatches=1, k=5))
+        self.assertTrue(host_has('ccctt', tdb=fake_redis, max_mismatches=2, k=5))
 
     def test_make_hosts(self):
         test_host_path = os.path.join("testdata", "unit_test_host.fa")
-        fake_leveldb = FakeLevelDb()
+        fake_trie_redis = FakeRedis()
         fake_redis = FakeRedis()
-        make_hosts(input_path=test_host_path, db=fake_redis, ldb=fake_leveldb, k=5)
+        make_hosts(input_path=test_host_path, db=fake_redis, tdb=fake_trie_redis, k=5)
         self.assertEqual({
-            b'': b'acgt',
-            b'a': b'cg',
-            b'ac': b'a',
-            b'aca': b'ac',
-            b'acaa': b'c',
-            b'acaac': b'*',
-            b'acac': b'a',
-            b'acaca': b'*',
-            b'ag': b'g',
-            b'agg': b't',
-            b'aggt': b'a',
-            b'aggta': b'*',
-            b'c': b'a',
-            b'ca': b'ac',
-            b'caa': b'c',
-            b'caac': b'c',
-            b'caacc': b'*',
-            b'cac': b'a',
-            b'caca': b'a',
-            b'cacaa': b'*',
-            b'g': b'gt',
-            b'gg': b't',
-            b'ggt': b'a',
-            b'ggta': b'g',
-            b'ggtag': b'*',
-            b'gt': b'a',
-            b'gta': b'g',
-            b'gtag': b'a',
-            b'gtaga': b'*',
-            b't': b'a',
-            b'ta': b'g',
-            b'tag': b'g',
-            b'tagg': b't',
-            b'taggt': b'*',
-        }, fake_leveldb.my_dict)
+            '': {'a', 'c', 'g', 't'},
+            'a': {'c', 'g'},
+            'ac': {'a'},
+            'aca': {'a', 'c'},
+            'acaa': {'c'},
+            'acaac': {'*'},
+            'acac': {'a'},
+            'acaca': {'*'},
+            'ag': {'g'},
+            'agg': {'t'},
+            'aggt': {'a'},
+            'aggta': {'*'},
+            'c': {'a'},
+            'ca': {'a', 'c'},
+            'caa': {'c'},
+            'caac': {'c'},
+            'caacc': {'*'},
+            'cac': {'a'},
+            'caca': {'a'},
+            'cacaa': {'*'},
+            'g': {'g', 't'},
+            'gg': {'t'},
+            'ggt': {'a'},
+            'ggta': {'g'},
+            'ggtag': {'*'},
+            'gt': {'a'},
+            'gta': {'g'},
+            'gtag': {'a'},
+            'gtaga': {'*'},
+            't': {'a'},
+            'ta': {'g'},
+            'tag': {'g'},
+            'tagg': {'t'},
+            'taggt': {'*'},
+        }, fake_trie_redis.my_dict)
         self.assertEqual({
             'acaca', 'cacaa', 'acaac', 'caacc',
             'taggt', 'aggta', 'ggtag', 'gtaga',
@@ -208,17 +218,17 @@ class Test(TestCase):
 
     def test_predict_side_effects(self):
         fake_redis = FakeRedis()
-        fake_leveldb = FakeLevelDb()
+        fake_trie_redis = FakeRedis()
         fake_redis.zadd('targets_5', {
             "caacc": 5.0,
             "cggtc": 4.0
         })
-        index("gggtc", fake_leveldb)
-        index("atctg", fake_leveldb)
+        index("gggtc", fake_trie_redis)
+        index("atctg", fake_trie_redis)
         name = None
         with tempfile.NamedTemporaryFile(delete=False) as outfile:
             name = outfile.name
-            predict_side_effects(db=fake_redis, out_path=outfile.name, ldb=fake_leveldb, k=5,
+            predict_side_effects(db=fake_redis, out_path=outfile.name, tdb=fake_trie_redis, k=5,
                                  max_mismatches=1)
         with open(name, "r") as outfile:
             self.assertEqual(["caacc\n"], list(outfile.readlines()))
