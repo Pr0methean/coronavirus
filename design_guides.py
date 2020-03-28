@@ -12,8 +12,6 @@ def bytesu(string):
 
 # length of the CRISPR guide RNA
 K = 28
-TARGETS_KEY = f"targets_{K}"
-GOOD_TARGETS_KEY = f"good_targets_{K}"
 # path to a fasta file with host sequences to avoid
 HOST_FILE = "GCF_000001405.39_GRCh38.p13_rna.fna" # all RNA in human transcriptome
 # HOST_FILE = "lung-tissue-gene-cds.fa" # just lungs
@@ -22,7 +20,7 @@ HOST_PATH = os.path.join("host", HOST_FILE)
 END = bytesu("*")
 EMPTY = bytesu('')
 # path to pickle / save the trie
-REBUILD_TRIE = True
+REBUILD_TRIE = False
 TRIE_PATH = "trie"
 # path to alignment and id for the sequence to delete
 TARGET_PATH = os.path.join("alignments", "HKU1+MERS+SARS+nCoV-Consensus.clu")
@@ -57,7 +55,7 @@ def write_fasta(fasta_path: str, sequences):
 
 
 def getKmers(sequence: str, k: int, step: int):
-    for x in range(0, len(sequence) - k, step):
+    for x in range(0, len(sequence) - k + 1, step):
         yield sequence[x:x + k]
 
 
@@ -103,30 +101,29 @@ def host_has(kmer: str, ldb=leveldb, max_mismatches=CUTOFF, k=K):
     return should_avoid
 
 
-def make_hosts(input_path=HOST_PATH, db=r, ldb=leveldb):
-    if not REBUILD_TRIE:
-        return
+def make_hosts(input_path=HOST_PATH, db=r, ldb=leveldb, k=K):
     with open(input_path, "r") as host_file:
         for rcount, record in enumerate(SeqIO.parse(host_file, "fasta")):
-            for kmer in getKmers(record.seq.lower(), K, 1):
+            for kmer in getKmers(record.seq.lower(), k, 1):
                 kmer_string = str(kmer)
                 db.sadd("hosts", kmer_string)
                 index(kmer_string, ldb)
             print(rcount)
 
 
-def make_targets(db=r, target_path=TARGET_PATH, target_id=TARGET_ID):
+def make_targets(db=r, target_path=TARGET_PATH, target_id=TARGET_ID, k=K):
+    targets_key = f"targets_{k}"
     alignment = AlignIO.read(target_path, "clustal")
     seq_ids = [seq.id for seq in alignment]
     index_of_target = seq_ids.index(target_id)
     alignment_length = alignment.get_alignment_length()
     conserved = conserved_in_alignment(alignment, alignment_length)
-    for start in range(alignment_length - K):
-        kmer, n_conserved = count_conserved(alignment, conserved, index_of_target, start)
+    for start in range(alignment_length - k + 1):
+        kmer, n_conserved = count_conserved(alignment, conserved, index_of_target, start, k)
         if n_conserved > 0:
             print(f"{kmer} at {start} has {int(n_conserved)} conserved bases")
-            db.zadd(TARGETS_KEY, {kmer: n_conserved})
-    most = db.zrevrangebyscore(TARGETS_KEY, 9001, 0, withscores=True, start=0, num=1)[0]
+            db.zadd(targets_key, {kmer: n_conserved})
+    most = db.zrevrangebyscore(targets_key, 9001, 0, withscores=True, start=0, num=1)[0]
     print(
         f"the most conserved {K}mer {most[0].decode()} has {int(most[1])} bases conserved in {seq_ids}")
 
@@ -136,39 +133,40 @@ def conserved_in_alignment(alignment, alignment_length):
         [seq[i] for seq in alignment]) else 0 for i in range(alignment_length)]
 
 
-def count_conserved(alignment, conserved, index_of_target, start):
+def count_conserved(alignment, conserved, index_of_target, start, k=K):
     if not all(conserved[start + OFFSET_1:start + OFFSET_2]):
-        kmer = ""
-        n_conserved = 0
+        return "", 0
     else:
-        kmer = str(alignment[index_of_target][start:start + K].seq).lower()
+        kmer = str(alignment[index_of_target][start:start + k].seq).lower()
         if "-" in kmer:
-            n_conserved = 0
-        else:
-            n_conserved = sum(conserved[start:start + K])
+            return "", 0
+        n_conserved = sum(conserved[start:start + k])
     return kmer, n_conserved
 
 
-def predict_side_effects(db=r, out_path=OUTFILE_PATH, ldb=leveldb):
-    targets = db.zrevrangebyscore(TARGETS_KEY, 9001, 0)
+def predict_side_effects(db=r, out_path=OUTFILE_PATH, ldb=leveldb, k=K, max_mismatches=CUTOFF):
+    targets_key = f"targets_{k}"
+    good_targets_key = f"good_targets_{k}"
+    targets = db.zrevrangebyscore(targets_key, 9001, 0)
     for target in targets:
         t = target.decode()
-        should_avoid = host_has(t, ldb)
+        should_avoid = host_has(t, ldb, max_mismatches, k)
         if should_avoid:
             continue
-        db.zadd(GOOD_TARGETS_KEY, {target: db.zscore(TARGETS_KEY, t)})
+        db.zadd(good_targets_key, {t: db.zscore(targets_key, t)})
     with open(out_path, "w+") as outfile:
-        for k, good_target in enumerate(db.zrevrangebyscore(GOOD_TARGETS_KEY, 90, 0)):
+        for k, good_target in enumerate(db.zrevrangebyscore(good_targets_key, 90, 0)):
             good_target_string = good_target.decode()
             print("good target", k, good_target_string)
             outfile.write(good_target_string + "\n")
-    print(f"saved {db.zcard(GOOD_TARGETS_KEY)} good targets at {out_path}")
+    print(f"saved {db.zcard(good_targets_key)} good targets at {out_path}")
 
 
 if __name__ == "__main__":
     r = redis.Redis(host='localhost', port=6379)
     leveldb = plyvel.DB("db/", create_if_missing=True)
-    make_hosts(db=r, ldb=leveldb)
+    if REBUILD_TRIE:
+        make_hosts(db=r, ldb=leveldb)
     # test the trie lookup works
     for i in range(5):
         host_has(r.srandmember("hosts").decode(), ldb=leveldb)
