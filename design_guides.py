@@ -60,16 +60,6 @@ def getKmers(sequence: str, k: int, step: int):
         yield sequence[x:x + k]
 
 
-def index(kmer: str, db: Redis):
-    if db.exists(kmer):
-        return
-    db.sadd(kmer, '*')
-    for x in reversed(range(0, len(kmer))):
-        prefix = kmer[:x]
-        if not db.sadd(prefix, kmer[x]):
-            return
-
-
 def _find(path: str, kmer: str, d: int, db: Redis, max_mismatches=CUTOFF, k=K):
     if not kmer:
         if len(path) is k:
@@ -99,13 +89,27 @@ def host_has(kmer: str, tdb: Redis, max_mismatches=CUTOFF, k=K):
     return should_avoid
 
 
+@lru_cache()
+def kmer_range_list(k):
+    return list(reversed(range(0, k)))
+
+
+def index(kmer: str, db, kmer_range):
+    db.sadd(kmer, '*')
+    for x in kmer_range:
+        db.sadd(kmer[:x], kmer[x])
+
+
 def make_hosts(input_path: str, db: Redis, tdb: Redis, k=K):
     with open(input_path, "r") as host_file:
+        kmer_range = kmer_range_list(k)
+        pipe = db.pipeline()
         for rcount, record in enumerate(SeqIO.parse(host_file, "fasta")):
             for kmer in getKmers(record.seq.lower(), k, 1):
                 kmer_string = str(kmer)
                 db.sadd("hosts", kmer_string)
-                index(kmer_string, tdb)
+                index(kmer_string, tdb, kmer_range)
+            pipe.execute()
             print(rcount)
 
 
@@ -170,4 +174,3 @@ if __name__ == "__main__":
         host_has(r.srandmember("hosts").decode(), tdb=r_for_trie)
     make_targets(db=r)
     predict_side_effects(db=r, tdb=r_for_trie, out_path=OUTFILE_PATH)
-    leveldb.close()

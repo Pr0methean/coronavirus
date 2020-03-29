@@ -6,7 +6,7 @@ from unittest import TestCase
 from Bio import SeqIO
 
 from design_guides import conserved_in_alignment, count_conserved, K, index, host_has, make_hosts, getKmers, find, \
-    make_targets, bytesu, predict_side_effects
+    make_targets, bytesu, predict_side_effects, kmer_range_list
 
 
 class FakeWriteBatch:
@@ -90,6 +90,12 @@ class FakeRedis:
         else:
             return None
 
+    def execute(self):
+        pass
+
+    def pipeline(self):
+        return self
+
 
 # noinspection SpellCheckingInspection,PyTypeChecker
 class Test(TestCase):
@@ -126,7 +132,7 @@ class Test(TestCase):
 
     def test_index(self):
         fake_redis = FakeRedis()
-        index('acctg', fake_redis)
+        index('acctg', fake_redis, kmer_range_list(5))
         self.assertDictEqual(fake_redis.my_dict, {
             '': {'a'},
             'a': {'c'},
@@ -135,7 +141,7 @@ class Test(TestCase):
             'acct': {'g'},
             'acctg': {'*'}})
         for x in range(2):  # Should be idempotent
-            index('accgc', fake_redis)
+            index('accgc', fake_redis, kmer_range_list(5))
             self.assertDictEqual({
                 '': {'a'},
                 'a': {'c'},
@@ -149,16 +155,16 @@ class Test(TestCase):
 
     def test_find(self):
         fake_redis = FakeRedis()
-        index('acctg', fake_redis)
-        index('ggcat', fake_redis)
+        index('acctg', fake_redis, kmer_range_list(5))
+        index('ggcat', fake_redis, kmer_range_list(5))
         self.assertEqual(len(list(find('acctg', tdb=fake_redis, max_mismatches=1, k=5))), 1)
         self.assertEqual(len(list(find('acgtg', tdb=fake_redis, max_mismatches=1, k=5))), 1)
         self.assertEqual(len(list(find('acgcg', tdb=fake_redis, max_mismatches=1, k=5))), 0)
 
     def test_host_has(self):
         fake_redis = FakeRedis()
-        index('acctg', fake_redis)
-        index('ggcat', fake_redis)
+        index('acctg', fake_redis, kmer_range_list(5))
+        index('ggcat', fake_redis, kmer_range_list(5))
         self.assertTrue(host_has('acctg', tdb=fake_redis, max_mismatches=1, k=5))
         self.assertTrue(host_has('ccctg', tdb=fake_redis, max_mismatches=1, k=5))
         self.assertFalse(host_has('ccctt', tdb=fake_redis, max_mismatches=1, k=5))
@@ -226,8 +232,8 @@ class Test(TestCase):
             "caacc": 5.0,
             "cggtc": 4.0
         })
-        index("gggtc", fake_trie_redis)
-        index("atctg", fake_trie_redis)
+        index("gggtc", fake_trie_redis, kmer_range_list(5))
+        index("atctg", fake_trie_redis, kmer_range_list(5))
         name = None
         with tempfile.NamedTemporaryFile(delete=False) as outfile:
             name = outfile.name
