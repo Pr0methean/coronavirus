@@ -1,11 +1,10 @@
 import itertools
 import os
 
-import plyvel
+import numpy as np
 import redis
 from Bio import AlignIO, SeqIO
 from Bio.Seq import Seq
-import numpy as np
 from sklearn.neighbors import BallTree
 
 
@@ -92,7 +91,8 @@ def make_hosts(input_path=HOST_PATH, k=K):
         for rcount, record in enumerate(SeqIO.parse(host_file, "fasta")):
             for kmer in getKmers(record.seq.lower(), k, 1):
                 x += kmer2vecs(kmer)
-            print(rcount)
+            if rcount % 100 is 0:
+                print(rcount)
     return BallTree(np.asarray(x), metric='hamming')
 
 
