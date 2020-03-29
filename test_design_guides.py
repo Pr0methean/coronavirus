@@ -5,8 +5,8 @@ from unittest import TestCase
 
 from Bio import SeqIO
 
-from design_guides import conserved_in_alignment, count_conserved, K, index, host_has, make_hosts, getKmers, find, \
-    make_targets, bytesu, predict_side_effects
+from design_guides import conserved_in_alignment, count_conserved, K, host_has, make_hosts, getKmers, \
+    make_targets, bytesu, predict_side_effects, kmer2vecs, BASE_A, BASE_C, BASE_T, BASE_G
 
 
 class FakeWriteBatch:
@@ -111,91 +111,18 @@ class Test(TestCase):
         # Has dashes
         self.assertEqual(count_conserved([SeqIO.SeqRecord("ggtttatcccttcccaggtagcaaacc-")], "ggtttatcccttcccaggtagcaaacc-", 0, 0), ("", 0))
 
-    def test_index(self):
-        fake_leveldb = FakeLevelDb()
-        index('acctg', fake_leveldb)
-        self.assertDictEqual(fake_leveldb.my_dict, {
-            b'': b'a',
-            b'a': b'c',
-            b'ac': b'c',
-            b'acc': b't',
-            b'acct': b'g',
-            b'acctg': b'*'})
-        for x in range(2):  # Should be idempotent
-            index('accgc', fake_leveldb)
-            self.assertDictEqual({
-                b'': b'a',
-                b'a': b'c',
-                b'ac': b'c',
-                b'acc': b'gt',
-                b'accg': b'c',
-                b'acct': b'g',
-                b'accgc': b'*',
-                b'acctg': b'*',
-            }, fake_leveldb.my_dict)
-
-    def test_find(self):
-        fake_leveldb = FakeLevelDb()
-        index('acctg', fake_leveldb)
-        index('ggcat', fake_leveldb)
-        self.assertEqual(len(list(find('acctg', db=fake_leveldb, max_mismatches=1, k=5))), 1)
-        self.assertEqual(len(list(find('acgtg', db=fake_leveldb, max_mismatches=1, k=5))), 1)
-        self.assertEqual(len(list(find('acgcg', db=fake_leveldb, max_mismatches=1, k=5))), 0)
-
     def test_host_has(self):
-        fake_leveldb = FakeLevelDb()
-        index('acctg', fake_leveldb)
-        index('ggcat', fake_leveldb)
-        self.assertTrue(host_has('acctg', ldb=fake_leveldb, max_mismatches=1, k=5))
-        self.assertTrue(host_has('ccctg', ldb=fake_leveldb, max_mismatches=1, k=5))
-        self.assertFalse(host_has('ccctt', ldb=fake_leveldb, max_mismatches=1, k=5))
-        self.assertTrue(host_has('ccctt', ldb=fake_leveldb, max_mismatches=2, k=5))
+        test_host_path = os.path.join("testdata", "unit_test_host.fa")
+        tree = make_hosts(input_path=test_host_path, k=5)
+        self.assertTrue(host_has('acaca', tree=tree, max_mismatches=1, k=5))
+        self.assertTrue(host_has('acata', tree=tree, max_mismatches=1, k=5))
+        self.assertFalse(host_has('ggttt', tree=tree, max_mismatches=1, k=5))
+        self.assertTrue(host_has('ggttt', tree=tree, max_mismatches=2, k=5))
 
     def test_make_hosts(self):
         test_host_path = os.path.join("testdata", "unit_test_host.fa")
-        fake_leveldb = FakeLevelDb()
-        fake_redis = FakeRedis()
-        make_hosts(input_path=test_host_path, db=fake_redis, ldb=fake_leveldb, k=5)
-        self.assertEqual({
-            b'': b'acgt',
-            b'a': b'cg',
-            b'ac': b'a',
-            b'aca': b'ac',
-            b'acaa': b'c',
-            b'acaac': b'*',
-            b'acac': b'a',
-            b'acaca': b'*',
-            b'ag': b'g',
-            b'agg': b't',
-            b'aggt': b'a',
-            b'aggta': b'*',
-            b'c': b'a',
-            b'ca': b'ac',
-            b'caa': b'c',
-            b'caac': b'c',
-            b'caacc': b'*',
-            b'cac': b'a',
-            b'caca': b'a',
-            b'cacaa': b'*',
-            b'g': b'gt',
-            b'gg': b't',
-            b'ggt': b'a',
-            b'ggta': b'g',
-            b'ggtag': b'*',
-            b'gt': b'a',
-            b'gta': b'g',
-            b'gtag': b'a',
-            b'gtaga': b'*',
-            b't': b'a',
-            b'ta': b'g',
-            b'tag': b'g',
-            b'tagg': b't',
-            b'taggt': b'*',
-        }, fake_leveldb.my_dict)
-        self.assertEqual({
-            'acaca', 'cacaa', 'acaac', 'caacc',
-            'taggt', 'aggta', 'ggtag', 'gtaga',
-        }, fake_redis.my_dict["hosts"])
+        tree = make_hosts(input_path=test_host_path, k=5)
+        print(tree)
 
     def test_make_targets(self):
         fake_redis = FakeRedis()
@@ -208,17 +135,29 @@ class Test(TestCase):
 
     def test_predict_side_effects(self):
         fake_redis = FakeRedis()
-        fake_leveldb = FakeLevelDb()
         fake_redis.zadd('targets_5', {
-            "caacc": 5.0,
-            "cggtc": 4.0
+            "ttgct": 5.0,
+            "taggc": 4.0
         })
-        index("gggtc", fake_leveldb)
-        index("atctg", fake_leveldb)
+        test_host_path = os.path.join("testdata", "unit_test_host.fa")
+        tree = make_hosts(input_path=test_host_path, k=5)
         name = None
         with tempfile.NamedTemporaryFile(delete=False) as outfile:
             name = outfile.name
-            predict_side_effects(db=fake_redis, out_path=outfile.name, ldb=fake_leveldb, k=5,
+            predict_side_effects(db=fake_redis, out_path=outfile.name, tree=tree, k=5,
                                  max_mismatches=1)
         with open(name, "r") as outfile:
-            self.assertEqual(["caacc\n"], list(outfile.readlines()))
+            self.assertEqual(["ttgct\n"], list(outfile.readlines()))
+
+    def test_kmer2vecs(self):
+        self.assertEqual(set(kmer2vecs('accgt')), {(BASE_A, BASE_C, BASE_C, BASE_G, BASE_T)})
+        self.assertEqual(set(kmer2vecs('acngw')), {
+            (BASE_A, BASE_C, BASE_A, BASE_G, BASE_A),
+            (BASE_A, BASE_C, BASE_C, BASE_G, BASE_A),
+            (BASE_A, BASE_C, BASE_G, BASE_G, BASE_A),
+            (BASE_A, BASE_C, BASE_T, BASE_G, BASE_A),
+            (BASE_A, BASE_C, BASE_A, BASE_G, BASE_T),
+            (BASE_A, BASE_C, BASE_C, BASE_G, BASE_T),
+            (BASE_A, BASE_C, BASE_G, BASE_G, BASE_T),
+            (BASE_A, BASE_C, BASE_T, BASE_G, BASE_T),
+        })

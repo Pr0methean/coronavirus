@@ -1,9 +1,12 @@
+import itertools
 import os
 
 import plyvel
 import redis
 from Bio import AlignIO, SeqIO
 from Bio.Seq import Seq
+import numpy as np
+from sklearn.neighbors import BallTree
 
 
 def bytesu(string):
@@ -13,7 +16,7 @@ def bytesu(string):
 # length of the CRISPR guide RNA
 K = 28
 # path to a fasta file with host sequences to avoid
-HOST_FILE = "GCF_000001405.39_GRCh38.p13_rna.fna" # all RNA in human transcriptome
+HOST_FILE = "GCF_000001405.39_GRCh38.p13_rna.fna"  # all RNA in human transcriptome
 # HOST_FILE = "lung-tissue-gene-cds.fa" # just lungs
 HOST_PATH = os.path.join("host", HOST_FILE)
 # ending token for tries
@@ -35,12 +38,23 @@ DR_SEQUENCE_PATH = os.path.join("parts", "crispr", "dr_sequence_bz_short.fa")
 TAIL_PATH = os.path.join("parts", "tail.fa")
 # path for output
 OUTFILE_PATH = os.path.join("guides", "trie_guides.csv")
+BASE_A = 0
+BASE_C = 1
+BASE_G = 2
+BASE_T = 3
+WILDCARD_EXPANSION = {
+    'a': {BASE_A},
+    'c': {BASE_C},
+    'g': {BASE_G},
+    't': {BASE_T},
+    'w': {BASE_A, BASE_T},
+    'n': {BASE_A, BASE_C, BASE_G, BASE_T}
+}
 
 r = None
 leveldb = None
 
 
-# helpers
 def all_equal(arr):
     return arr.count(arr[0]) == len(arr)
 
@@ -59,56 +73,27 @@ def getKmers(sequence: str, k: int, step: int):
         yield sequence[x:x + k]
 
 
-def index(kmer: str, db):
-    kmer_bytes = bytesu(kmer)
-    if db.get(kmer_bytes, EMPTY) != EMPTY:
-        return
-    with db.write_batch(transaction=True) as wb:
-        wb.put(kmer_bytes, END)
-        for x in reversed(range(0, len(kmer_bytes))):
-            prefix = kmer_bytes[:x]
-            old_value = db.get(prefix, EMPTY)
-            if kmer_bytes[x] in old_value:
-                return  # this prefix is shared with a kmer that's already indexed
-            else:
-                new_value = bytes(sorted([*old_value, kmer_bytes[x]]))
-                wb.put(prefix, new_value)
+def kmer2vecs(kmer: str):
+    return itertools.product(*[WILDCARD_EXPANSION[base] for base in kmer])
 
 
-def _find(path: bytes, kmer: bytes, d: int, db, max_mismatches=CUTOFF, k=K):
-    if not kmer:
-        if len(path) is k:
-            yield (path, d)
-        return
-    base, suffix = kmer[0], kmer[1:]
-    for key in db.get(path, b''):
-        step = 1 if key is not base else 0
-        if d + step > max_mismatches:
-            return
-        for result in _find(path + bytes([key]), suffix, d + step, db, max_mismatches, k):
-            yield result
+def host_has(kmer: str, tree: BallTree, max_mismatches=CUTOFF, k=K):
+    distance, closest = tree.query(np.asarray(list(kmer2vecs(kmer))), 1, return_distance=True)
+    if distance > max_mismatches / k:
+        print(f"allow {kmer}")
+        return False
+    print(f"avoid {kmer} matches {closest}")
+    return True
 
 
-def find(kmer: str, db=leveldb, max_mismatches=CUTOFF, k=K):
-    return _find(b'', bytesu(kmer), 0, db, max_mismatches, k)
-
-
-def host_has(kmer: str, ldb=leveldb, max_mismatches=CUTOFF, k=K):
-    matches = list(find(kmer, ldb, max_mismatches, k))
-    should_avoid = len(matches) > 0
-    notice = "avoid" if should_avoid else "allow"
-    print(notice, kmer, "matches", matches)
-    return should_avoid
-
-
-def make_hosts(input_path=HOST_PATH, db=r, ldb=leveldb, k=K):
+def make_hosts(input_path=HOST_PATH, k=K):
+    x = []
     with open(input_path, "r") as host_file:
         for rcount, record in enumerate(SeqIO.parse(host_file, "fasta")):
             for kmer in getKmers(record.seq.lower(), k, 1):
-                kmer_string = str(kmer)
-                db.sadd("hosts", kmer_string)
-                index(kmer_string, ldb)
+                x += kmer2vecs(kmer)
             print(rcount)
+    return BallTree(np.asarray(x), metric='hamming')
 
 
 def make_targets(db=r, target_path=TARGET_PATH, target_id=TARGET_ID, k=K):
@@ -144,13 +129,13 @@ def count_conserved(alignment, conserved, index_of_target, start, k=K):
     return kmer, n_conserved
 
 
-def predict_side_effects(db=r, out_path=OUTFILE_PATH, ldb=leveldb, k=K, max_mismatches=CUTOFF):
+def predict_side_effects(tree, db=r, out_path=OUTFILE_PATH, k=K, max_mismatches=CUTOFF):
     targets_key = f"targets_{k}"
     good_targets_key = f"good_targets_{k}"
     targets = db.zrevrangebyscore(targets_key, 9001, 0)
     for target in targets:
         t = target.decode()
-        should_avoid = host_has(t, ldb, max_mismatches, k)
+        should_avoid = host_has(t, tree, max_mismatches, k)
         if should_avoid:
             continue
         db.zadd(good_targets_key, {t: db.zscore(targets_key, t)})
@@ -164,12 +149,9 @@ def predict_side_effects(db=r, out_path=OUTFILE_PATH, ldb=leveldb, k=K, max_mism
 
 if __name__ == "__main__":
     r = redis.Redis(host='localhost', port=6379)
-    leveldb = plyvel.DB("db/", create_if_missing=True)
-    if REBUILD_TRIE:
-        make_hosts(db=r, ldb=leveldb)
+    tree = make_hosts()
     # test the trie lookup works
     for i in range(5):
-        host_has(r.srandmember("hosts").decode(), ldb=leveldb)
+        host_has(r.srandmember("hosts").decode(), tree=tree)
     make_targets(db=r)
-    predict_side_effects(db=r, ldb=leveldb)
-    leveldb.close()
+    predict_side_effects(db=r, tree=tree)
