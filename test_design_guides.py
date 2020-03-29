@@ -150,14 +150,14 @@ class Test(TestCase):
             self.assertEqual(["ttgct\n"], list(outfile.readlines()))
 
     def test_kmer2vecs(self):
-        self.assertEqual(set(kmer2vecs('accgt')), {(BASE_A, BASE_C, BASE_C, BASE_G, BASE_T)})
-        self.assertEqual(set(kmer2vecs('acngw')), {
-            (BASE_A, BASE_C, BASE_A, BASE_G, BASE_A),
-            (BASE_A, BASE_C, BASE_C, BASE_G, BASE_A),
-            (BASE_A, BASE_C, BASE_G, BASE_G, BASE_A),
-            (BASE_A, BASE_C, BASE_T, BASE_G, BASE_A),
-            (BASE_A, BASE_C, BASE_A, BASE_G, BASE_T),
-            (BASE_A, BASE_C, BASE_C, BASE_G, BASE_T),
-            (BASE_A, BASE_C, BASE_G, BASE_G, BASE_T),
-            (BASE_A, BASE_C, BASE_T, BASE_G, BASE_T),
+        self.assertEqual(set(kmer2vecs(b'accgt')), {bytes([BASE_A, BASE_C, BASE_C, BASE_G, BASE_T])})
+        self.assertEqual(set(kmer2vecs(b'acngw')), {
+            bytes([BASE_A, BASE_C, BASE_A, BASE_G, BASE_A]),
+            bytes([BASE_A, BASE_C, BASE_C, BASE_G, BASE_A]),
+            bytes([BASE_A, BASE_C, BASE_G, BASE_G, BASE_A]),
+            bytes([BASE_A, BASE_C, BASE_T, BASE_G, BASE_A]),
+            bytes([BASE_A, BASE_C, BASE_A, BASE_G, BASE_T]),
+            bytes([BASE_A, BASE_C, BASE_C, BASE_G, BASE_T]),
+            bytes([BASE_A, BASE_C, BASE_G, BASE_G, BASE_T]),
+            bytes([BASE_A, BASE_C, BASE_T, BASE_G, BASE_T]),
         })

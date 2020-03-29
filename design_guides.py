@@ -1,6 +1,7 @@
 import itertools
 import os
 
+import dask.array as da
 import numpy as np
 import redis
 from Bio import AlignIO, SeqIO
@@ -42,12 +43,12 @@ BASE_C = 1
 BASE_G = 2
 BASE_T = 3
 WILDCARD_EXPANSION = {
-    'a': {BASE_A},
-    'c': {BASE_C},
-    'g': {BASE_G},
-    't': {BASE_T},
-    'w': {BASE_A, BASE_T},
-    'n': {BASE_A, BASE_C, BASE_G, BASE_T}
+    ord('a'): {BASE_A},
+    ord('c'): {BASE_C},
+    ord('g'): {BASE_G},
+    ord('t'): {BASE_T},
+    ord('w'): {BASE_A, BASE_T},
+    ord('n'): {BASE_A, BASE_C, BASE_G, BASE_T}
 }
 
 r = None
@@ -72,12 +73,22 @@ def getKmers(sequence: str, k: int, step: int):
         yield sequence[x:x + k]
 
 
-def kmer2vecs(kmer: str):
-    return itertools.product(*[WILDCARD_EXPANSION[base] for base in kmer])
+def kmer2vecs(kmer: bytes):
+    return (bytes(vec) for vec in itertools.product(*[WILDCARD_EXPANSION[base] for base in kmer]))
+
+
+def byteses2array(byteses, k):
+    num_byteses = len(byteses)
+    concatenated = bytearray(num_byteses * k)
+    for i in range(0, num_byteses):
+        concatenated[i * k:(i + 1) * k] = byteses[i]
+    array = np.frombuffer(concatenated, dtype='uint8')
+    array = array.reshape(num_byteses, k)
+    return array
 
 
 def host_has(kmer: str, tree: BallTree, max_mismatches=CUTOFF, k=K):
-    distance, closest = tree.query(np.asarray(list(kmer2vecs(kmer))), 1, return_distance=True)
+    distance, closest = tree.query(byteses2array(list(kmer2vecs(bytesu(kmer))), k), 1, return_distance=True)
     print(f"closest to {kmer} is {distance}, which is {closest}")
     if distance > max_mismatches / k:
         print(f"allow {kmer}")
@@ -88,10 +99,23 @@ def host_has(kmer: str, tree: BallTree, max_mismatches=CUTOFF, k=K):
 
 def make_hosts(input_path=HOST_PATH, k=K):
     with open(input_path, "r") as host_file:
-        return BallTree(np.asarray([vec
-                     for record in SeqIO.parse(host_file, "fasta")
-                     for kmer in getKmers(record.seq.lower(), k=k, step=1)
-                     for vec in kmer2vecs(kmer)]), metric='hamming')
+        kmers = {bytesu(str(kmer))
+                 for record in SeqIO.parse(host_file, "fasta")
+                 for kmer in getKmers(record.seq.lower(), k=k, step=1)}
+        print(f"{len(kmers)} unique kmers")
+        vectors = bytearray()
+        [vectors.extend(vec)
+         for kmer in kmers
+         for vec in kmer2vecs(kmer)]
+        del kmers
+        numvectors = int(len(vectors) / k)
+        print(f"{numvectors} unique vectors")
+        array = np.frombuffer(vectors, dtype='uint8')
+        del vectors
+        print("Array made")
+        array = array.reshape(int(numvectors), int(k))
+        array = da.from_array(array)
+        return BallTree(array, metric='hamming')
 
 
 def make_targets(db=r, target_path=TARGET_PATH, target_id=TARGET_ID, k=K):
