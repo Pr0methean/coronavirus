@@ -1,5 +1,7 @@
 import itertools
 import os
+import tempfile
+from mmap import mmap, ACCESS_READ
 
 import dask.array as da
 import numpy as np
@@ -38,6 +40,7 @@ DR_SEQUENCE_PATH = os.path.join("parts", "crispr", "dr_sequence_bz_short.fa")
 TAIL_PATH = os.path.join("parts", "tail.fa")
 # path for output
 OUTFILE_PATH = os.path.join("guides", "trie_guides.csv")
+VECTORS_PATH = os.path.join("tmp", "vectors")
 BASE_A = 0
 BASE_C = 1
 BASE_G = 2
@@ -103,18 +106,18 @@ def make_hosts(input_path=HOST_PATH, k=K):
                  for record in SeqIO.parse(host_file, "fasta")
                  for kmer in getKmers(record.seq.lower(), k=k, step=1)}
         print(f"{len(kmers)} unique kmers")
-        vectors = bytearray()
-        [vectors.extend(vec)
-         for kmer in kmers
-         for vec in kmer2vecs(kmer)]
+        with open(VECTORS_PATH, "wb") as temp:
+            [temp.write(vec)
+             for kmer in kmers
+             for vec in kmer2vecs(kmer)]
         del kmers
-        numvectors = int(len(vectors) / k)
-        print(f"{numvectors} unique vectors")
-        array = np.frombuffer(vectors, dtype='uint8')
-        del vectors
+        size = os.path.getsize(VECTORS_PATH)
+        num_vectors = int(size / k)
+        print(f"{num_vectors} unique vectors")
+        temp_file_no = os.open(VECTORS_PATH, os.O_RDONLY)
+        array = np.frombuffer(mmap(temp_file_no, length=size, access=ACCESS_READ), dtype='uint8')
         print("Array made")
-        array = array.reshape(int(numvectors), int(k))
-        array = da.from_array(array)
+        array = array.reshape(int(num_vectors), int(k))
         return BallTree(array, metric='hamming')
 
 

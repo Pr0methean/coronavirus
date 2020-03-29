@@ -6,3 +6,4 @@ trie.*
 /db/
 /venv-pypy/
 /db-old/
+/tmp/
