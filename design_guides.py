@@ -1,5 +1,6 @@
 import itertools
 import os
+import pickle
 import tempfile
 from mmap import mmap, ACCESS_READ
 
@@ -18,15 +19,15 @@ def bytesu(string):
 # length of the CRISPR guide RNA
 K = 28
 # path to a fasta file with host sequences to avoid
-HOST_FILE = "GCF_000001405.39_GRCh38.p13_rna.fna"  # all RNA in human transcriptome
-# HOST_FILE = "lung-tissue-gene-cds.fa" # just lungs
+# HOST_FILE = "GCF_000001405.39_GRCh38.p13_rna.fna"  # all RNA in human transcriptome
+HOST_FILE = "lung-tissue-gene-cds.fa" # just lungs
 HOST_PATH = os.path.join("host", HOST_FILE)
 # ending token for tries
 END = bytesu("*")
 EMPTY = bytesu('')
-# path to pickle / save the trie
-REBUILD_TRIE = False
-TRIE_PATH = "trie"
+# path to pickle / save the index
+REBUILD_INDEX = True
+INDEX_PATH = "trie.pkl"
 # path to alignment and id for the sequence to delete
 TARGET_PATH = os.path.join("alignments", "HKU1+MERS+SARS+nCoV-Consensus.clu")
 TARGET_ID = "nCoV"
@@ -92,8 +93,9 @@ def byteses2array(byteses, k):
 
 def host_has(kmer: str, tree: BallTree, max_mismatches=CUTOFF, k=K):
     distance, closest = tree.query(byteses2array(list(kmer2vecs(bytesu(kmer))), k), 1, return_distance=True)
+    distance = int(distance * k)
     print(f"closest to {kmer} is {distance}, which is {closest}")
-    if distance > max_mismatches / k:
+    if distance > max_mismatches:
         print(f"allow {kmer}")
         return False
     print(f"avoid {kmer} matches {closest}")
@@ -118,7 +120,10 @@ def make_hosts(input_path=HOST_PATH, k=K):
         array = np.frombuffer(mmap(temp_file_no, length=size, access=ACCESS_READ), dtype='uint8')
         print("Array made")
         array = array.reshape(int(num_vectors), int(k))
-        return BallTree(array, metric='hamming')
+        tree = BallTree(array, metric='hamming')
+        with open(INDEX_PATH, "wb") as index_file:
+            pickle.dump(tree, index_file)
+        return tree
 
 
 def make_targets(db=r, target_path=TARGET_PATH, target_id=TARGET_ID, k=K):
@@ -174,7 +179,12 @@ def predict_side_effects(tree, db=r, out_path=OUTFILE_PATH, k=K, max_mismatches=
 
 if __name__ == "__main__":
     r = redis.Redis(host='localhost', port=6379)
-    tree = make_hosts()
+    tree = None
+    if REBUILD_INDEX:
+        tree = make_hosts()
+    else:
+        with open(INDEX_PATH, "rb") as index_file:
+            tree = pickle.load(index_file)
     # test the trie lookup works
     for i in range(5):
         host_has(r.srandmember("hosts").decode(), tree=tree)
