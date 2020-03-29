@@ -78,6 +78,7 @@ def kmer2vecs(kmer: str):
 
 def host_has(kmer: str, tree: BallTree, max_mismatches=CUTOFF, k=K):
     distance, closest = tree.query(np.asarray(list(kmer2vecs(kmer))), 1, return_distance=True)
+    print(f"closest to {kmer} is {distance}, which is {closest}")
     if distance > max_mismatches / k:
         print(f"allow {kmer}")
         return False
@@ -86,9 +87,11 @@ def host_has(kmer: str, tree: BallTree, max_mismatches=CUTOFF, k=K):
 
 
 def make_hosts(input_path=HOST_PATH, k=K):
-    x = []
     with open(input_path, "r") as host_file:
-        return BallTree(np.asarray([kmer2vecs(kmer) for kmer in [getKmers(record.seq.lower(), k=k, step=1) for record in SeqIO.parse(host_file, "fasta")]]))
+        return BallTree(np.asarray([vec
+                     for record in SeqIO.parse(host_file, "fasta")
+                     for kmer in getKmers(record.seq.lower(), k=k, step=1)
+                     for vec in kmer2vecs(kmer)]), metric='hamming')
 
 
 def make_targets(db=r, target_path=TARGET_PATH, target_id=TARGET_ID, k=K):
