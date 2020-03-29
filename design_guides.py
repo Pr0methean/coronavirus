@@ -88,12 +88,7 @@ def host_has(kmer: str, tree: BallTree, max_mismatches=CUTOFF, k=K):
 def make_hosts(input_path=HOST_PATH, k=K):
     x = []
     with open(input_path, "r") as host_file:
-        for rcount, record in enumerate(SeqIO.parse(host_file, "fasta")):
-            for kmer in getKmers(record.seq.lower(), k, 1):
-                x += kmer2vecs(kmer)
-            if rcount % 100 is 0:
-                print(rcount)
-    return BallTree(np.asarray(x), metric='hamming')
+        return BallTree(np.asarray([kmer2vecs(kmer) for kmer in [getKmers(record.seq.lower(), k=k, step=1) for record in SeqIO.parse(host_file, "fasta")]]))
 
 
 def make_targets(db=r, target_path=TARGET_PATH, target_id=TARGET_ID, k=K):
