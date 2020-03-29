@@ -108,7 +108,9 @@ def make_hosts(input_path=HOST_PATH, k=K):
                  for record in SeqIO.parse(host_file, "fasta")
                  for kmer in getKmers(record.seq.lower(), k=k, step=1)}
         print(f"{len(kmers)} unique kmers")
-        with open(VECTORS_PATH, "wb") as temp:
+        if os.path.exists(VECTORS_PATH):
+            os.remove(VECTORS_PATH)
+        with open(VECTORS_PATH, "wb+") as temp:
             [temp.write(vec)
              for kmer in kmers
              for vec in kmer2vecs(kmer)]
