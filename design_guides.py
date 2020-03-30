@@ -69,15 +69,6 @@ def all_equal(arr):
     return arr.count(arr[0]) == len(arr)
 
 
-def read_fasta(fasta_path: str) -> Seq:
-    record = SeqIO.read(handle=fasta_path, format="fasta")
-    return record.seq.lower()
-
-
-def write_fasta(fasta_path: str, sequences):
-    SeqIO.write(sequences=sequences, handle=fasta_path, format="fasta")
-
-
 def getKmers(sequence: str, k: int, step: int):
     for x in range(0, len(sequence) - k + 1, step):
         yield sequence[x:x + k]
