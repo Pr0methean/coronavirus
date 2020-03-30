@@ -1,15 +1,13 @@
 import itertools
 import os
 import pickle
-from mmap import mmap, ACCESS_READ
 import random
+from mmap import mmap, ACCESS_READ
 
 import numpy as np
 import redis
 from Bio import AlignIO, SeqIO
-from Bio.Seq import Seq
 from sklearn.neighbors import BallTree
-import pickle
 
 
 def bytesu(string):
@@ -124,9 +122,9 @@ def make_hosts(input_path=HOST_PATH, k=K, index_path=INDEX_PATH, vectors_path=VE
                  for kmer in kmers
                  for vec in kmer2vecs(kmer)]
             del kmers
-            size = os.path.getsize(vectors_path)
-            num_vectors = int(size / k)
-            print(f"{num_vectors} unique vectors")
+        size = os.path.getsize(vectors_path)
+        num_vectors = int(size / k)
+        print(f"{num_vectors} unique vectors")
         array = np.frombuffer(open_as_mmap(vectors_path), dtype='uint8')
         print("Array made")
         array = array.reshape(int(num_vectors), int(k))
