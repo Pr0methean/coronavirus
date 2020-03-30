@@ -39,6 +39,7 @@ class EndToEndTest(unittest.TestCase):
             # Cover branches where existing index is used
             main(rebuild_index=False,
                  **reused_args)
+            self.verify_outputs()
         finally:
             test_redis.flushdb()
 
