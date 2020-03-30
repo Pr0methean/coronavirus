@@ -1,15 +1,15 @@
 import itertools
 import os
 import pickle
-import tempfile
 from mmap import mmap, ACCESS_READ
+import random
 
-import dask.array as da
 import numpy as np
 import redis
 from Bio import AlignIO, SeqIO
 from Bio.Seq import Seq
 from sklearn.neighbors import BallTree
+import pickle
 
 
 def bytesu(string):
@@ -19,17 +19,20 @@ def bytesu(string):
 # length of the CRISPR guide RNA
 K = 28
 # path to a fasta file with host sequences to avoid
-# HOST_FILE = "GCF_000001405.39_GRCh38.p13_rna.fna"  # all RNA in human transcriptome
-HOST_FILE = "lung-tissue-gene-cds.fa" # just lungs
+HOST_TRANSCRIPTOME = "GCF_000001405.39_GRCh38.p13_rna.fna"  # all RNA in human transcriptome
+HOST_LUNG_TISSUE = "lung-tissue-gene-cds.fa"  # just lungs
+HOST_FILE = HOST_TRANSCRIPTOME
 HOST_PATH = os.path.join("host", HOST_FILE)
 # ending token for tries
 END = bytesu("*")
 EMPTY = bytesu('')
 # path to pickle / save the index
 REBUILD_INDEX = True
+USE_EXISTING_VECTORS = False
 INDEX_PATH = "trie.pkl"
 # path to alignment and id for the sequence to delete
-TARGET_PATH = os.path.join("alignments", "HKU1+MERS+SARS+nCoV-Consensus.clu")
+CORONAVIRUS_CONSENSUS = "HKU1+MERS+SARS+nCoV-Consensus.clu"
+TARGET_PATH = os.path.join("alignments", CORONAVIRUS_CONSENSUS)
 TARGET_ID = "nCoV"
 # mismatch cutoff (e.g. how close must two kmers be to bind?)
 CUTOFF = 2
@@ -54,9 +57,12 @@ WILDCARD_EXPANSION = {
     ord('w'): {BASE_A, BASE_T},
     ord('n'): {BASE_A, BASE_C, BASE_G, BASE_T}
 }
-
-r = None
-leveldb = None
+VEC_TO_KMER = {
+    BASE_A: 'a',
+    BASE_C: 'c',
+    BASE_G: 'g',
+    BASE_T: 't'
+}
 
 
 def all_equal(arr):
@@ -77,8 +83,18 @@ def getKmers(sequence: str, k: int, step: int):
         yield sequence[x:x + k]
 
 
+def vec2kmer(vec: bytes):
+    return ''.join(VEC_TO_KMER[byte] for byte in vec)
+
+
 def kmer2vecs(kmer: bytes):
     return (bytes(vec) for vec in itertools.product(*[WILDCARD_EXPANSION[base] for base in kmer]))
+
+
+def load_from_pickle(file_path):
+    with open(file_path, "rb") as pickle_file:
+        unpickled = pickle.load(pickle_file)
+    return unpickled
 
 
 def byteses2array(byteses, k):
@@ -94,41 +110,48 @@ def byteses2array(byteses, k):
 def host_has(kmer: str, tree: BallTree, max_mismatches=CUTOFF, k=K):
     distance, closest = tree.query(byteses2array(list(kmer2vecs(bytesu(kmer))), k), 1, return_distance=True)
     distance = int(distance * k)
-    print(f"closest to {kmer} is {distance}, which is {closest}")
+    print(f"closest to {kmer} is {vec2kmer(tree.data[closest[0][0]])} at distance {distance}")
     if distance > max_mismatches:
-        print(f"allow {kmer}")
+        print(f"allow")
         return False
-    print(f"avoid {kmer} matches {closest}")
+    print(f"avoid")
     return True
 
 
-def make_hosts(input_path=HOST_PATH, k=K):
+def make_hosts(input_path=HOST_PATH, k=K, index_path=INDEX_PATH, vectors_path=VECTORS_PATH,
+               use_existing_vectors=USE_EXISTING_VECTORS):
     with open(input_path, "r") as host_file:
-        kmers = {bytesu(str(kmer))
-                 for record in SeqIO.parse(host_file, "fasta")
-                 for kmer in getKmers(record.seq.lower(), k=k, step=1)}
-        print(f"{len(kmers)} unique kmers")
-        if os.path.exists(VECTORS_PATH):
-            os.remove(VECTORS_PATH)
-        with open(VECTORS_PATH, "wb+") as temp:
-            [temp.write(vec)
-             for kmer in kmers
-             for vec in kmer2vecs(kmer)]
-        del kmers
-        size = os.path.getsize(VECTORS_PATH)
-        num_vectors = int(size / k)
-        print(f"{num_vectors} unique vectors")
-        temp_file_no = os.open(VECTORS_PATH, os.O_RDONLY)
-        array = np.frombuffer(mmap(temp_file_no, length=size, access=ACCESS_READ), dtype='uint8')
+        if not use_existing_vectors:
+            kmers = {bytesu(str(kmer))
+                     for record in SeqIO.parse(host_file, "fasta")
+                     for kmer in getKmers(record.seq.lower(), k=k, step=1)}
+            print(f"{len(kmers)} unique kmers")
+            if os.path.exists(vectors_path):
+                os.remove(vectors_path)
+            with open(vectors_path, "wb+") as temp:
+                [temp.write(vec)
+                 for kmer in kmers
+                 for vec in kmer2vecs(kmer)]
+            del kmers
+            size = os.path.getsize(vectors_path)
+            num_vectors = int(size / k)
+            print(f"{num_vectors} unique vectors")
+        array = np.frombuffer(open_as_mmap(vectors_path), dtype='uint8')
         print("Array made")
         array = array.reshape(int(num_vectors), int(k))
         tree = BallTree(array, metric='hamming')
-        with open(INDEX_PATH, "wb") as index_file:
+        with open(index_path, "wb") as index_file:
             pickle.dump(tree, index_file)
         return tree
 
 
-def make_targets(db=r, target_path=TARGET_PATH, target_id=TARGET_ID, k=K):
+def open_as_mmap(file_path):
+    temp_file_no = os.open(file_path, os.O_RDONLY)
+    mmapped = mmap(temp_file_no, length=os.path.getsize(file_path), access=ACCESS_READ)
+    return mmapped
+
+
+def make_targets(db, target_path=TARGET_PATH, target_id=TARGET_ID, k=K):
     targets_key = f"targets_{k}"
     alignment = AlignIO.read(target_path, "clustal")
     seq_ids = [seq.id for seq in alignment]
@@ -161,7 +184,7 @@ def count_conserved(alignment, conserved, index_of_target, start, k=K):
     return kmer, n_conserved
 
 
-def predict_side_effects(tree, db=r, out_path=OUTFILE_PATH, k=K, max_mismatches=CUTOFF):
+def predict_side_effects(tree, db, out_path=OUTFILE_PATH, k=K, max_mismatches=CUTOFF):
     targets_key = f"targets_{k}"
     good_targets_key = f"good_targets_{k}"
     targets = db.zrevrangebyscore(targets_key, 9001, 0)
@@ -179,16 +202,23 @@ def predict_side_effects(tree, db=r, out_path=OUTFILE_PATH, k=K, max_mismatches=
     print(f"saved {db.zcard(good_targets_key)} good targets at {out_path}")
 
 
-if __name__ == "__main__":
-    r = redis.Redis(host='localhost', port=6379)
+def main(r, rebuild_index=REBUILD_INDEX, host_path=HOST_PATH, target_path=TARGET_PATH,
+         target_id=TARGET_ID, k=K, index_path=INDEX_PATH, vectors_path=VECTORS_PATH,
+         out_path=OUTFILE_PATH, use_existing_vectors=USE_EXISTING_VECTORS, max_mismatches_for_side_effect=CUTOFF):
     tree = None
-    if REBUILD_INDEX:
-        tree = make_hosts()
+    if rebuild_index:
+        tree = make_hosts(host_path, k, index_path=index_path, vectors_path=vectors_path,
+                          use_existing_vectors=use_existing_vectors)
     else:
-        with open(INDEX_PATH, "rb") as index_file:
-            tree = pickle.load(index_file)
+        tree = load_from_pickle(index_path)
     # test the trie lookup works
     for i in range(5):
-        host_has(r.srandmember("hosts").decode(), tree=tree)
-    make_targets(db=r)
-    predict_side_effects(db=r, tree=tree)
+        host_has(vec2kmer(random.choice(tree.data)), tree=tree, k=k,
+                 max_mismatches=max_mismatches_for_side_effect)
+    make_targets(db=r, target_path=target_path, target_id=target_id, k=k)
+    predict_side_effects(db=r, tree=tree, out_path=out_path, k=k,
+                         max_mismatches=max_mismatches_for_side_effect)
+
+
+if __name__ == "__main__":
+    main(r=redis.Redis(host='localhost', port=6379))

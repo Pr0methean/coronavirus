@@ -1,0 +1,11 @@
+funcy
+Bio
+biopython==1.76
+coverage==5.0.4
+joblib==0.14.1
+kdtree==0.16
+numpy==1.18.2
+redis==3.4.1
+scikit-learn==0.22.2.post1
+scipy==1.4.1
+toolz==0.10.0
