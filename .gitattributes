@@ -1,1 +1,2 @@
 host/GCF_000001405.39_GRCh38.p13_rna.fna filter=lfs diff=lfs merge=lfs -text
+testdata/lung_tissue_index.pkl filter=lfs diff=lfs merge=lfs -text
