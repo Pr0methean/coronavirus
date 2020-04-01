@@ -1,9 +1,12 @@
-from bio_firewall import count_records, get_kmers, make_hosts, make_targets, predict_side_effects
-from redis import Redis
-from Bio import SeqIO
-import random
 import csv
 import os
+
+from redis import Redis
+
+from bio_firewall import count_records, get_kmers, make_hosts, make_targets, \
+    predict_side_effects
+
+TEST_REDIS_ARGS = {'db': 15}
 
 
 def test_count_records():
@@ -26,10 +29,10 @@ def test_get_kmers():
 
 
 def test_make_hosts():
-    r, k = Redis(), 5
-    r.flushall()
+    r, k = Redis(**TEST_REDIS_ARGS), 5
+    r.flushdb()
     path = os.path.join("data", "test", "unit_test_host.fa")
-    hosts = make_hosts(path=path, k=k)
+    hosts = make_hosts(path=path, k=k, redis_args=TEST_REDIS_ARGS)
     hosts_snapshot_path = os.path.join("data", "snapshots", "hosts")
     with open(hosts_snapshot_path, "r") as hosts_snapshot_file:
         hosts_snapshot = hosts_snapshot_file.read().splitlines()
@@ -40,10 +43,10 @@ def test_make_hosts():
 
 
 def test_make_targets():
-    r, k = Redis(), 5
-    r.flushall()
+    r, k = Redis(**TEST_REDIS_ARGS), 5
+    r.flushdb()
     test_alignment_path = os.path.join("data", "test", "unit_test_target.clu")
-    targets = make_targets(path=test_alignment_path, id="nCoV", k=k)
+    targets = make_targets(path=test_alignment_path, id="nCoV", k=k, db=r)
     targets_snapshot_path = os.path.join("data", "snapshots", "targets")
     with open(targets_snapshot_path, "r") as targets_snapshot_file:
         targets_snapshot = list(csv.reader(targets_snapshot_file))
@@ -56,16 +59,17 @@ def test_make_targets():
 
 def test_predict_side_effects():
     k, cutoff = 5, 1
-    r = Redis()
-    r.flushall()
+    r = Redis(**TEST_REDIS_ARGS)
+    r.flushdb()
     test_host_path = os.path.join("data", "test", "unit_test_host.fa")
-    make_hosts(path=test_host_path, k=k)
+    make_hosts(path=test_host_path, k=k, redis_args=TEST_REDIS_ARGS)
     test_alignment_path = os.path.join("data", "test", "unit_test_target.clu")
-    make_targets(path=test_alignment_path, id="nCoV", k=k)
-    good_targets_snapshot_path = os.path.join("data", "snapshots", "good_targets")
+    make_targets(path=test_alignment_path, id="nCoV", k=k, db=r)
+    good_targets_snapshot_path = os.path.join("data", "snapshots",
+                                              "good_targets")
     with open(good_targets_snapshot_path, "r") as good_targets_snapshot_file:
         good_targets_snapshot = list(csv.reader(good_targets_snapshot_file))
-    good_targets = predict_side_effects(k=k, cutoff=cutoff)
+    good_targets = predict_side_effects(k=k, cutoff=cutoff, db=r)
     print("good_targets", good_targets)
     print("good_targets_snapshot", good_targets_snapshot)
     for good_target, snapshot in zip(good_targets, good_targets_snapshot):
