@@ -29,7 +29,7 @@ def test_get_kmers():
 
 
 def test_make_hosts():
-    r, k = Redis(**TEST_REDIS_ARGS), 5
+    r, k = Redis(**TEST_REDIS_ARGS), 28
     r.flushdb()
     path = os.path.join("data", "test", "unit_test_host.fa")
     hosts = make_hosts(path=path, k=k, redis_args=TEST_REDIS_ARGS)
@@ -43,7 +43,7 @@ def test_make_hosts():
 
 
 def test_make_targets():
-    r, k = Redis(**TEST_REDIS_ARGS), 5
+    r, k = Redis(**TEST_REDIS_ARGS), 28
     r.flushdb()
     test_alignment_path = os.path.join("data", "test", "unit_test_target.clu")
     targets = make_targets(path=test_alignment_path, id="nCoV", k=k, db=r)
@@ -54,11 +54,11 @@ def test_make_targets():
     # print("targets_snapshot", targets_snapshot)
     for target, snapshot in zip(targets, targets_snapshot):
         assert target[0] == snapshot[0]
-        assert str(target[1]) == snapshot[1]
+        assert str(target[1]).strip(' ') == snapshot[1].strip(' ')
 
 
 def test_predict_side_effects():
-    k, cutoff = 5, 1
+    k, cutoff = 28, 1
     r = Redis(**TEST_REDIS_ARGS)
     r.flushdb()
     test_host_path = os.path.join("data", "test", "unit_test_host.fa")
@@ -74,38 +74,40 @@ def test_predict_side_effects():
     print("good_targets_snapshot", good_targets_snapshot)
     for good_target, snapshot in zip(good_targets, good_targets_snapshot):
         assert good_target[0] == snapshot[0]
-        assert str(good_target[1]) == snapshot[1]
+        assert str(good_target[1]).strip(' ') == snapshot[1].strip(' ')
 
 
 # save a sample of successful data to compare with future results (inspect!)
-# def snapshot():
-#     cutoff=1
-#     k = 5
-#     r = Redis()
-#     r.flushall()
-#     host_path = os.path.join("data", "test", "unit_test_host.fa")
-#     hosts_results_path = os.path.join("data", "snapshots", "hosts")
-#     hosts = make_hosts(path=host_path, k=k)
-#     print("hosts:")
-#     print(hosts)
-#     print("")
-#     with open(hosts_results_path, "w+") as hosts_results_file:
-#         hosts_results_file.writelines([f"{h}\n" for h in hosts])
-#     alignment_path = os.path.join("data", "tests", "unit_test_target.clu")
-#     targets_results_path = os.path.join("data", "snapshots", "targets")
-#     targets = make_targets(path=alignment_path, k=k)
-#     print("targets:")
-#     print(targets)
-#     print("")
-#     with open(targets_results_path, "w+") as targets_results_file:
-#         targets_results_file.writelines([f"{t[0]}, {t[1]}\n" for t in targets])
-#     good_targets = predict_side_effects(k=k, cutoff=cutoff)
-#     good_targets_results_path = os.path.join("data", "snapshots", "good_targets")
-#     print("good_targets:")
-#     print(good_targets)
-#     print("")
-#     with open(good_targets_results_path, "w+") as good_targets_results_file:
-#         good_targets_results_file.writelines([f"{gt[0]}, {gt[1]}\n" for gt in good_targets])
+def snapshot():
+    cutoff = 1
+    k = 28
+    r = Redis(**TEST_REDIS_ARGS)
+    r.flushdb()
+    host_path = os.path.join("data", "test", "unit_test_host.fa")
+    hosts_results_path = os.path.join("data", "snapshots", "hosts")
+    hosts = make_hosts(path=host_path, k=k)
+    print("hosts:")
+    print(hosts)
+    print("")
+    with open(hosts_results_path, "w+") as hosts_results_file:
+        hosts_results_file.writelines([f"{h}\n" for h in hosts])
+    alignment_path = os.path.join("data", "test", "unit_test_target.clu")
+    targets_results_path = os.path.join("data", "snapshots", "targets")
+    targets = make_targets(path=alignment_path, k=k)
+    print("targets:")
+    print(targets)
+    print("")
+    with open(targets_results_path, "w+") as targets_results_file:
+        targets_results_file.writelines([f"{t[0]}, {t[1]}\n" for t in targets])
+    good_targets = predict_side_effects(k=k, cutoff=cutoff)
+    good_targets_results_path = os.path.join("data", "snapshots",
+                                             "good_targets")
+    print("good_targets:")
+    print(good_targets)
+    print("")
+    with open(good_targets_results_path, "w+") as good_targets_results_file:
+        good_targets_results_file.writelines(
+            [f"{gt[0]}, {gt[1]}\n" for gt in good_targets])
 
 # snapshot()
 
