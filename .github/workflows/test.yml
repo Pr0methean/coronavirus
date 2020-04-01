@@ -30,6 +30,8 @@ jobs:
     - name: Unit Tests
       run: |
         python -m unittest test_design_guides_unit.py
+    - name: Launch Redis Server
+      uses: supercharge/redis-github-action@1.1.0
     - name: End-to-End Test
       run: |
         python -m unittest test_design_guides_end_to_end.py
