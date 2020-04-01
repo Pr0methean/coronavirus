@@ -1,13 +1,12 @@
 import filecmp
 import os
-import pickle
 import unittest
-from mmap import mmap
 
 import redis
-
-from design_guides import CORONAVIRUS_CONSENSUS, HOST_LUNG_TISSUE, main, open_as_mmap, load_from_pickle
 from funcy import chunks
+
+from design_guides import CORONAVIRUS_CONSENSUS, HOST_LUNG_TISSUE, main, \
+    open_as_mmap
 
 
 class EndToEndTest(unittest.TestCase):
@@ -31,7 +30,8 @@ class EndToEndTest(unittest.TestCase):
                  use_existing_vectors=False,
                  **reused_args)
             self.verify_outputs()
-            # Cover branches where index is rebuilt but existing vectors are used
+            # Cover branches where index is rebuilt but existing vectors are
+            # used
             main(rebuild_index=True,
                  use_existing_vectors=True,
                  **reused_args)
@@ -44,18 +44,24 @@ class EndToEndTest(unittest.TestCase):
             test_redis.flushdb()
 
     def verify_outputs(self):
-        self.assertTrue(filecmp.cmp(os.path.join("testdata", "lung_tissue_output"),
-                                    os.path.join("tmp", "test_output"),
-                                    shallow=False),
-                        f"File test_output in tmp doesn't match reference file lung_tissue_output in testdata")
+        self.assertTrue(
+            filecmp.cmp(os.path.join("testdata", "lung_tissue_output"),
+                        os.path.join("tmp", "test_output"),
+                        shallow=False),
+            f"File test_output in tmp doesn't match reference file "
+            f"lung_tissue_output in testdata")
         self.assertEqual(
             {b''.join(bytelist) for bytelist in
-             chunks(28, 28, open_as_mmap(os.path.join("testdata", "lung_tissue_vectors")))},
-            {b''.join(bytelist) for bytelist in chunks(28, 28, open_as_mmap(os.path.join("tmp", "test_vectors")))}
+             chunks(28, 28, open_as_mmap(
+                 os.path.join("testdata", "lung_tissue_vectors")))},
+            {b''.join(bytelist) for bytelist in
+             chunks(28, 28, open_as_mmap(os.path.join("tmp", "test_vectors")))}
         )
         # Doesn't work because BallTree doesn't implement __eq__:
-        # self.assertEqual(load_from_pickle(os.path.join("testdata", "lung_tissue_index.pkl")),
-        #                  load_from_pickle(os.path.join("tmp", "test_index.pkl")))
+        # self.assertEqual(load_from_pickle(os.path.join("testdata",
+        # "lung_tissue_index.pkl")),
+        #                  load_from_pickle(os.path.join("tmp",
+        #                  "test_index.pkl")))
 
 
 if __name__ == '__main__':

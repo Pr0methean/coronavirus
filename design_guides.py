@@ -17,7 +17,8 @@ def bytesu(string):
 # length of the CRISPR guide RNA
 K = 28
 # path to a fasta file with host sequences to avoid
-HOST_TRANSCRIPTOME = "GCF_000001405.39_GRCh38.p13_rna.fna"  # all RNA in human transcriptome
+HOST_TRANSCRIPTOME = "GCF_000001405.39_GRCh38.p13_rna.fna"  # all RNA in
+# human transcriptome
 HOST_LUNG_TISSUE = "lung-tissue-gene-cds.fa"  # just lungs
 HOST_FILE = HOST_TRANSCRIPTOME
 HOST_PATH = os.path.join("host", HOST_FILE)
@@ -77,7 +78,8 @@ def vec2kmer(vec: bytes):
 
 
 def kmer2vecs(kmer: bytes):
-    return (bytes(vec) for vec in itertools.product(*[WILDCARD_EXPANSION[base] for base in kmer]))
+    return (bytes(vec) for vec in
+            itertools.product(*[WILDCARD_EXPANSION[base] for base in kmer]))
 
 
 def load_from_pickle(file_path):
@@ -97,9 +99,13 @@ def byteses2array(byteses, k):
 
 
 def host_has(kmer: str, tree: BallTree, max_mismatches=CUTOFF, k=K):
-    distance, closest = tree.query(byteses2array(list(kmer2vecs(bytesu(kmer))), k), 1, return_distance=True)
+    distance, closest = tree.query(
+        byteses2array(list(kmer2vecs(bytesu(kmer))), k), 1,
+        return_distance=True)
     distance = int(distance * k)
-    print(f"closest to {kmer} is {vec2kmer(tree.data[closest[0][0]])} at distance {distance}")
+    print(
+        f"closest to {kmer} is {vec2kmer(tree.data[closest[0][0]])} at "
+        f"distance {distance}")
     if distance > max_mismatches:
         print(f"allow")
         return False
@@ -107,7 +113,8 @@ def host_has(kmer: str, tree: BallTree, max_mismatches=CUTOFF, k=K):
     return True
 
 
-def make_hosts(input_path=HOST_PATH, k=K, index_path=INDEX_PATH, vectors_path=VECTORS_PATH,
+def make_hosts(input_path=HOST_PATH, k=K, index_path=INDEX_PATH,
+               vectors_path=VECTORS_PATH,
                use_existing_vectors=USE_EXISTING_VECTORS):
     with open(input_path, "r") as host_file:
         if not use_existing_vectors:
@@ -136,7 +143,8 @@ def make_hosts(input_path=HOST_PATH, k=K, index_path=INDEX_PATH, vectors_path=VE
 
 def open_as_mmap(file_path):
     temp_file_no = os.open(file_path, os.O_RDONLY)
-    mmapped = mmap(temp_file_no, length=os.path.getsize(file_path), access=ACCESS_READ)
+    mmapped = mmap(temp_file_no, length=os.path.getsize(file_path),
+                   access=ACCESS_READ)
     return mmapped
 
 
@@ -148,13 +156,16 @@ def make_targets(db, target_path=TARGET_PATH, target_id=TARGET_ID, k=K):
     alignment_length = alignment.get_alignment_length()
     conserved = conserved_in_alignment(alignment, alignment_length)
     for start in range(alignment_length - k + 1):
-        kmer, n_conserved = count_conserved(alignment, conserved, index_of_target, start, k)
+        kmer, n_conserved = count_conserved(alignment, conserved,
+                                            index_of_target, start, k)
         if n_conserved > 0:
             print(f"{kmer} at {start} has {int(n_conserved)} conserved bases")
             db.zadd(targets_key, {kmer: n_conserved})
-    most = db.zrevrangebyscore(targets_key, 9001, 0, withscores=True, start=0, num=1)[0]
+    most = db.zrevrangebyscore(
+        targets_key, 9001, 0, withscores=True, start=0, num=1)[0]
     print(
-        f"the most conserved {K}mer {most[0].decode()} has {int(most[1])} bases conserved in {seq_ids}")
+        f"the most conserved {K}mer {most[0].decode()} has {int(most[1])} "
+        f"bases conserved in {seq_ids}")
 
 
 def conserved_in_alignment(alignment, alignment_length):
@@ -173,7 +184,8 @@ def count_conserved(alignment, conserved, index_of_target, start, k=K):
     return kmer, n_conserved
 
 
-def predict_side_effects(tree, db, out_path=OUTFILE_PATH, k=K, max_mismatches=CUTOFF):
+def predict_side_effects(tree, db, out_path=OUTFILE_PATH, k=K,
+                         max_mismatches=CUTOFF):
     targets_key = f"targets_{k}"
     good_targets_key = f"good_targets_{k}"
     targets = db.zrevrangebyscore(targets_key, 9001, 0)
@@ -184,19 +196,24 @@ def predict_side_effects(tree, db, out_path=OUTFILE_PATH, k=K, max_mismatches=CU
             continue
         db.zadd(good_targets_key, {t: db.zscore(targets_key, t)})
     with open(out_path, "w+") as outfile:
-        for k, good_target in enumerate(db.zrevrangebyscore(good_targets_key, 90, 0)):
+        for k, good_target in enumerate(
+                db.zrevrangebyscore(good_targets_key, 90, 0)):
             good_target_string = good_target.decode()
             print("good target", k, good_target_string)
             outfile.write(good_target_string + "\n")
     print(f"saved {db.zcard(good_targets_key)} good targets at {out_path}")
 
 
-def main(r, rebuild_index=REBUILD_INDEX, host_path=HOST_PATH, target_path=TARGET_PATH,
-         target_id=TARGET_ID, k=K, index_path=INDEX_PATH, vectors_path=VECTORS_PATH,
-         out_path=OUTFILE_PATH, use_existing_vectors=USE_EXISTING_VECTORS, max_mismatches_for_side_effect=CUTOFF):
+def main(r, rebuild_index=REBUILD_INDEX, host_path=HOST_PATH,
+         target_path=TARGET_PATH,
+         target_id=TARGET_ID, k=K, index_path=INDEX_PATH,
+         vectors_path=VECTORS_PATH,
+         out_path=OUTFILE_PATH, use_existing_vectors=USE_EXISTING_VECTORS,
+         max_mismatches_for_side_effect=CUTOFF):
     tree = None
     if rebuild_index:
-        tree = make_hosts(host_path, k, index_path=index_path, vectors_path=vectors_path,
+        tree = make_hosts(host_path, k, index_path=index_path,
+                          vectors_path=vectors_path,
                           use_existing_vectors=use_existing_vectors)
     else:
         tree = load_from_pickle(index_path)
