@@ -1,0 +1,6 @@
+biopython==1.76
+# coverage==5.0.4
+# joblib==0.14.1
+redis==3.4.1
+pytest==5.4.1
+tqdm==4.44.1

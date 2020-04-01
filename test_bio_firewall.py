@@ -31,10 +31,13 @@ def test_make_hosts():
     r.flushall()
     path = os.path.join("data", "test", "unit_test_host.fa")
     hosts = make_hosts(path=path, k=k)
-    hosts_snapshot_path = os.path.join("data", "test", "unit_test_host.fa")
+    hosts_snapshot_path = os.path.join("data", "snapshots", "hosts")
     with open(hosts_snapshot_path, "r") as hosts_snapshot_file:
-        hosts_snapshot = list(csv.reader(hosts_snapshot_file))
-    assert hosts == hosts_snapshot
+        hosts_snapshot = hosts_snapshot_file.read().splitlines()
+    print("hosts", hosts)
+    print("hosts_snapshot", hosts_snapshot)
+    for host in hosts:
+        assert host in hosts_snapshot
 
 
 def test_make_targets():
@@ -45,22 +48,30 @@ def test_make_targets():
     targets_snapshot_path = os.path.join("data", "snapshots", "targets")
     with open(targets_snapshot_path, "r") as targets_snapshot_file:
         targets_snapshot = list(csv.reader(targets_snapshot_file))
-    assert targets_snapshot == targets
+    # print("targets", targets)
+    # print("targets_snapshot", targets_snapshot)
+    for target, snapshot in zip(targets, targets_snapshot):
+        assert target[0] == snapshot[0]
+        assert str(target[1]) == snapshot[1]
 
 
 def test_predict_side_effects():
-    k = 5
+    k, cutoff = 5, 1
     r = Redis()
     r.flushall()
     test_host_path = os.path.join("data", "test", "unit_test_host.fa")
-    make_hosts(path=test_host_path, k=5)
+    make_hosts(path=test_host_path, k=k)
     test_alignment_path = os.path.join("data", "test", "unit_test_target.clu")
     make_targets(path=test_alignment_path, id="nCoV", k=k)
     good_targets_snapshot_path = os.path.join("data", "snapshots", "good_targets")
     with open(good_targets_snapshot_path, "r") as good_targets_snapshot_file:
         good_targets_snapshot = list(csv.reader(good_targets_snapshot_file))
-    good_targets = predict_side_effects()
-    assert good_targets == good_targets_snapshot
+    good_targets = predict_side_effects(k=k, cutoff=cutoff)
+    print("good_targets", good_targets)
+    print("good_targets_snapshot", good_targets_snapshot)
+    for good_target, snapshot in zip(good_targets, good_targets_snapshot):
+        assert good_target[0] == snapshot[0]
+        assert str(good_target[1]) == snapshot[1]
 
 
 # save a sample of successful data to compare with future results (inspect!)

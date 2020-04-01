@@ -5,7 +5,6 @@ from Bio import AlignIO, SeqIO
 from itertools import product
 from functools import partial
 import multiprocessing as mp
-from Bio.Seq import Seq
 from redis import Redis
 from tqdm import tqdm
 import os
@@ -15,8 +14,8 @@ CPUS = 12
 # length of the CRISPR guide RNA
 K = 28
 # path to a fasta file with host sequences to avoid
-HOST_FILE = "GCF_000001405.39_GRCh38.p13_rna.fna"  # all RNA in human transcriptome
-# HOST_FILE = "lung-tissue-gene-cds.fa" # just lungs
+HOST_FILE = "GCF_000001405.39_GRCh38.p13_rna.fna"  # human transcriptome
+# HOST_FILE = "lung-tissue-gene-cds.fa" # lung protein codes
 HOST_PATH = os.path.join("data", "host", HOST_FILE)
 # path to pickle / save the index
 REINDEX = True
@@ -157,8 +156,7 @@ def predict_side_effects(k=K, cutoff=CUTOFF, db=r):
     good_targets = db.zrevrangebyscore(
         good_targets_key, 90, 0, withscores=True)
     GT = [(gt[0].decode(), gt[1]) for gt in good_targets]
-    [print(
-        f"good target {gt[0]} has {int(gt[1])} of {k} bases conserved ({int((gt[1] / k) * 100)}%)") for gt in GT]
+    [print(f"good target {gt[0]} has {int(gt[1])} of {k} bases conserved ({int((gt[1] / k) * 100)}%)") for gt in GT]
     with open(OUT_PATH, "w+") as outfile:
         outfile.writelines([f"{gt[0]}, {gt[1]}\n" for gt in GT])
     return GT

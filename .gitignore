@@ -1,5 +1,4 @@
 GCF_000001405.39_GRCh38.p13_rna.fna
-human_transcriptome.fna
 .DS_Store
 trie.*
 /venv/
@@ -8,3 +7,4 @@ trie.*
 /db-old/
 .idea
 .whitesource
+__pycache__
