@@ -6,6 +6,7 @@ import os
 from functools import partial
 from itertools import product
 
+import frozendict as frozendict
 from Bio import AlignIO, SeqIO
 from redis import Redis
 from tqdm import tqdm
@@ -31,7 +32,8 @@ OFFSET_1, OFFSET_2 = 14, 21
 # path for output
 OUT_PATH = os.path.join("data", "guides", f"k{K}_cutoff{CUTOFF}_guides.csv")
 # cache
-r = Redis()
+REDIS_ARGS = frozendict.frozendict()
+r = Redis(**REDIS_ARGS)
 # base -> options map
 WILDCARD = {
     "n": ["a", "c", "t", "g"],
@@ -60,7 +62,7 @@ def get_kmers(record, k=K, stringify=1):
             yield ''.join(option)
 
 
-def _handle_rec(record, k=K, redis_args={}):
+def _handle_rec(record, k=K, redis_args=REDIS_ARGS):
     indices = list(reversed(range(1, k)))
     r = Redis(**redis_args)
     for kmer in get_kmers(record, k=k):
@@ -77,7 +79,8 @@ def _handle_rec(record, k=K, redis_args={}):
         p.execute()
 
 
-def make_hosts(path=HOST_PATH, cpus=CPUS, k=K, redis_args={}, reindex=REINDEX):
+def make_hosts(path=HOST_PATH, cpus=CPUS, k=K, redis_args=REDIS_ARGS,
+               reindex=REINDEX):
     r = Redis(**redis_args)
     if reindex:
         total = count_records(path)
