@@ -1,58 +1,86 @@
-# We believe biotech can do better!
-# Covid-19 treatment should be safe, effective, and efficient
-# Algorithms + Data to Attack Covid-19 Genome with CRISPR
+# Biotech can do better!
+# COVID-19 treatment should be safe, effective, and efficient
+# Bio Firewall: Algorithms + Data to Treat + Prevent COVID-19
 
-# TLDR: Delete RNA in Virus which isn't in Human
+## TLDR: Delete RNA in Virus which isn't in Human
 
-## NOTE: Please help find a lab to test this! Forward this anyone who may have a capable lab
+## NOTE: Please forward to anyone who may have a lab to test this!
 ## Contact: Bion Howard - bion@bitpharma.com - +1 843 830 2918
 
-![CRISPR-Cas13 is an RNA-guided RNA interference system](https://github.com/bionicles/coronavirus/blob/master/diagrams/cas13.jpeg)
+![Project Bio Firewall](https://github.com/bionicles/coronavirus/blob/master/art/bio-firewall.jpeg)
+![TLDR: Target Virus, Ignore Human](https://github.com/bionicles/coronavirus/blob/master/art/venn.jpeg)
+![CRISPR-Cas13 is an RNA-guided RNA interference system](https://github.com/bionicles/coronavirus/blob/master/art/cas13.jpeg)
+![AAV6 can display targeting peptides in the VP3 protein](https://github.com/bionicles/coronavirus/blob/master/art/aav.jpeg)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 - STATUS: Minimum Viable Product - Work in Progress - Ready for Peer Review
-- NEXT: Design Plasmids with Promoters ([PDPN](https://epd.epfl.ch//cgi-bin/get_doc?db=hgEpdNew&format=genome&entry=PDPN_1), Sp1, Sp3, TTF-1, HNF-3α)
+- NEXT: Design CRISPR Biobetter, AAV Plasmid, cGMP Protocol 
 
 ## Usage
 ```
 conda create --name bio python=3.8
-pip install biopython redis
 conda activate bio
-sudo docker run -p 6379:6379 -d redis redis-server --appendonly yes
 
-python design-guides.py
+pip install biopython redis pytest tqdm
+
+# run redis
+sudo apt install redis-server
+redis-server
+
+# test the code
+pytest
+
+# download the transcriptome
+cd data/host
+wget ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.39_GRCh38.p13/GCF_000001405.39_GRCh38.p13_rna.fna.gz
+cd ../..
+
+# design crispr guides
+python bio_firewall.py
 ```
 
 ## Folders
-- Blacklist: Target sequences (SARS|HKU1|MERS|nCoV)
-- Whitelist: Host / off-target sequences
-- Guides: predicted gRNA
-- Alignments: Clustal Multiple Sequence Alignments
-- Parts: Sequences to include in plasmids
+- data
+    - target: Target sequences (SARS|HKU1|MERS|nCoV)
+    - host: Host / off-target sequences
+    - guides: predicted gRNA
+    - alignments: Clustal Multiple Sequence Alignments
+    - parts: Sequences to include in plasmids
+    - test: small files for fast tests
+    - snapshots: sample test output
+
 
 ## Problem: Covid-19 Outbreak
 
-- There is active silent spread of SARS-Cov-2 causing Covid-19 which is 200-400x more lethal than flu. Over 100,000 cases, with new cases outstripping recoveries, globally distributed community-acquired ("cat out of the bag") 
-- Silent spread of a disease increases the probability of further increases in virulence / lethality because more hosts enable more replication events and each replication event can yield mutations which cause increased virulence / lethality
+- We see globally active silent spread of SARS-Cov-2 causing COVID-19 exponentially more lethal than flu. 
+- Further increases in virulence / lethality must be anticipated because the virus can mutate many times per day
+- At almost 1 million confirmed cases, we have still yet to show an inflection point, so we can expect at least 2 million cases, and potentially many more
+- Vaccines require longterm monitoring and thus won't be ready in the near term
+
+![March 2020 US COVID-19 Map](https://github.com/bionicles/coronavirus/blob/master/art/covid-march.jpeg)
+![Logistic Growth with Unknown Inflection Point](https://github.com/bionicles/coronavirus/blob/master/art/logistic.jpeg)
+
 
 ## Challenge
 
-- How do you delete Coronavirus? 
+- How do you treat Coronavirus safely, effectively, and efficiently? 
+
 
 ## Opportunity
 
-- delete coronavirus genome conserved sequences with CRISPR-Cas13 RNA-guided RNA-knockdown
-- deliver with inhalers of nanoparticles / adenovirus (non-replicating)
-- express therapy only in type 1 pneumocytes with podoplanin promoter
+- delete coronavirus genome conserved sequences with CRISPR RNA-guided RNA-knockdown
+- deliver with inhalers of adenovirus (non-replicating)
+- express therapy only in susceptible cells with ACE2 promoter
 
 ![Two different plasmid design options](https://github.com/bionicles/coronavirus/blob/master/diagrams/crispr-plasmid-options.png)
 
 ## Prepare
 
 - install clustal omega 
-- install redis-cli and docker 
-- run redis for the whitelist `docker run -p 6379:6379 -d redis redis-server --appendonly yes`
-- download sequences of SARS, MERS, HKU1, and as many SARS-nCoV-2 genomes as possible from ncbi (.fa or .fasta format)
+- install redis-cli and redis-server 
+- run redis
+- download sequences of SARS, MERS, HKU1, and as many SARS-nCoV-2 genomes as possible from ncbi virus (.fa or .fasta format)
 
 ## Act
 
@@ -62,7 +90,7 @@ python design-guides.py
 - combine the SARS-nCoV-2 files with `cat $(ls -t) > combined.fasta`
 - align the prior outbreak sequences with the new consensus with `clustal -i combined.fasta -o combined.clu -outfmt=clu`
 - open the alignment and use CTRL-F and type `************` until you can't find any matches, then back up and copy this conserved substring from the SARS-nCoV-2 sequence into some file (i did this already) ... gradually delete stars to get more conserved substrings
-- run `python design_guides.py` with python (I'm using 3.8)
+- run `python bio_firewall.py` with python 3.8
 
 ## Reflect
 
@@ -77,6 +105,7 @@ python design-guides.py
 
 - redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
     - check Redis is running
+
 
 ## References
 

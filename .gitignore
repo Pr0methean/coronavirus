@@ -6,3 +6,5 @@ trie.*
 /db/
 /venv-pypy/
 /db-old/
+.idea
+.whitesource
