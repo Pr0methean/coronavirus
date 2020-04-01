@@ -13,7 +13,8 @@ def test_count_records():
 
 
 def test_get_kmers():
-    assert list(get_kmers('actg', k=2, stringify=0)) == ['ac', 'ct', 'tg']
+    actg_kmers = list(get_kmers('actg', k=2, stringify=0))
+    assert actg_kmers == ['ac', 'ct', 'tg']
     wc_kmers = list(get_kmers('wc', k=2, stringify=0))
     for kmer in ['ac', 'tc']:
         assert kmer in wc_kmers

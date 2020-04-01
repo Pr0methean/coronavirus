@@ -19,7 +19,7 @@
 
 ## Usage
 ```
-conda create --name bio python=3.8
+conda create --name bio python=3.7
 conda activate bio
 
 pip install biopython redis pytest tqdm

@@ -8,3 +8,4 @@ trie.*
 .idea
 .whitesource
 __pycache__
+.pytest_cache
