@@ -2,7 +2,6 @@ from bio_firewall import count_records, get_kmers, make_hosts, make_targets, pre
 from redis import Redis
 from Bio import SeqIO
 import random
-import copy
 import csv
 import os
 
