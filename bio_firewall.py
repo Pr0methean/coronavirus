@@ -1,13 +1,15 @@
 # why?: predict side effects in biotech
 # how?: identify K-length substrings of a target not present in a host
 # what?: hamming distance cutoff
-from Bio import AlignIO, SeqIO
-from itertools import product
-from functools import partial
 import multiprocessing as mp
+import os
+from functools import partial
+from itertools import product
+
+import frozendict as frozendict
+from Bio import AlignIO, SeqIO
 from redis import Redis
 from tqdm import tqdm
-import os
 
 # cpus
 CPUS = 12
@@ -30,7 +32,8 @@ OFFSET_1, OFFSET_2 = 14, 21
 # path for output
 OUT_PATH = os.path.join("data", "guides", f"k{K}_cutoff{CUTOFF}_guides.csv")
 # cache
-r = Redis()
+REDIS_ARGS = frozendict.frozendict()
+r = Redis(**REDIS_ARGS)
 # base -> options map
 WILDCARD = {
     "n": ["a", "c", "t", "g"],
@@ -55,13 +58,13 @@ def get_kmers(record, k=K, stringify=1):
     rec = str(record.seq.lower()) if stringify else record
     rec = [WILDCARD[base] for base in rec]
     for i in range(len(record) - k + 1):
-        for option in product(*rec[i:i+k]):
+        for option in product(*rec[i:i + k]):
             yield ''.join(option)
 
 
-def _handle_rec(record, k=K):
+def _handle_rec(record, k=K, redis_args=REDIS_ARGS):
     indices = list(reversed(range(1, k)))
-    r = Redis()
+    r = Redis(**redis_args)
     for kmer in get_kmers(record, k=k):
         print(kmer)
         p = r.pipeline()
@@ -76,10 +79,12 @@ def _handle_rec(record, k=K):
         p.execute()
 
 
-def make_hosts(path=HOST_PATH, cpus=CPUS, k=K, db=r, reindex=REINDEX):
+def make_hosts(path=HOST_PATH, cpus=CPUS, k=K, redis_args=REDIS_ARGS,
+               reindex=REINDEX):
+    r = Redis(**redis_args)
     if reindex:
         total = count_records(path)
-        handler = partial(_handle_rec, k=k)
+        handler = partial(_handle_rec, k=k, redis_args=redis_args)
         with open(path, "r") as hostfile:
             with mp.Pool(processes=cpus - 1) as pool:
                 _ = list(
@@ -105,7 +110,7 @@ def _find(path, target, d, k=K, db=r, cutoff=CUTOFF):
         step = 1 if host_base != target_base else 0
         if d + step > CUTOFF:
             return
-        for result in _find(path + host_base, suffix, d + step):
+        for result in _find(path + host_base, suffix, d + step, k, db, cutoff):
             yield result
 
 
@@ -119,7 +124,8 @@ def _all_equal(arr):
     return arr.count(arr[0]) == len(arr)
 
 
-def make_targets(path=TARGET_PATH, id=TARGET_ID, k=K, db=r, offset_1=OFFSET_1, offset_2=OFFSET_2):
+def make_targets(path=TARGET_PATH, id=TARGET_ID, k=K, db=r, offset_1=OFFSET_1,
+                 offset_2=OFFSET_2):
     targets_key = f"targets_{k}"
     alignment = AlignIO.read(path, "clustal")
     ids = [seq.id for seq in alignment]
@@ -156,7 +162,10 @@ def predict_side_effects(k=K, cutoff=CUTOFF, db=r):
     good_targets = db.zrevrangebyscore(
         good_targets_key, 90, 0, withscores=True)
     GT = [(gt[0].decode(), gt[1]) for gt in good_targets]
-    [print(f"good target {gt[0]} has {int(gt[1])} of {k} bases conserved ({int((gt[1] / k) * 100)}%)") for gt in GT]
+    [print(
+        f"good target {gt[0]} has {int(gt[1])} of {k} bases conserved ("
+        f"{int((gt[1] / k) * 100)}%)")
+        for gt in GT]
     with open(OUT_PATH, "w+") as outfile:
         outfile.writelines([f"{gt[0]}, {gt[1]}\n" for gt in GT])
     return GT
