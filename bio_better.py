@@ -2,14 +2,25 @@
 # how?: computational directed evolution of immuno-safety
 # what?: remove epitopes as gently as possible
 
-from bio_firewall import read_fasta
+import csv
+import os
+
+from Bio import Seq, SeqIO
 
 # list of amino acids sorted by hydrophobicity
-AAs = read_csv(os.path.join("data", "aas.csv"))
+AAs = list(csv.reader((os.path.join("data", "aas.csv"))))
 # name of the fasta file with the CRISPR protein sequence
 CRISPR_FASTA_NAME = "PspCas13b.fa"
 
-wild_type = read_fasta(os.path.join("data", "parts", "crispr", CRISPR_FASTA_NAME))
+
+def read_fasta(fasta_path: str) -> Seq:
+	record = SeqIO.read(handle=fasta_path, format="fasta")
+	return record.seq.lower()
+
+
+wild_type = read_fasta(
+	os.path.join("data", "parts", "crispr", CRISPR_FASTA_NAME))
+
 
 # predict MHC1 epitopes with MHCFlurry
 def get_epitopes(sequence):
@@ -24,7 +35,8 @@ def mutate(epitope):
 	target_letter = epitope[target_index]
 	new_aa = AAs[AAs.index(target_letter) + 1]["letter"]
 	aas = [aa if i is not target_index else new_aa for i,
-            aa in enumerate(epitope)]
+													   aa in enumerate(
+		epitope)]
 	return "".join(aas)
 
 
@@ -40,7 +52,7 @@ def splice(sequence, epitope, mutant):
 # mutate all epitopes in a sequence
 def evolve(sequence, epitopes):
 	new_sequence = sequence
-    mutations = [mutate(epitope) for epitope in epitopes]
+	mutations = [mutate(epitope) for epitope in epitopes]
     for epitope, mutation in zip(epitopes, mutations):
         new_sequence = splice(new_sequence, epitope, mutant)
     return new_sequence
@@ -52,9 +64,9 @@ if __name__ is "__main__":
 	g = 1
 
 	while len(epitopes) > 0:
-	    sequence = evolve(sequence, epitopes)
-	    epitopes = get_epitopes(sequence)
-	    print(f"generation {g}: {len(epitopes)} epitopes")
-	    g = g + 1
+		sequence = evolve(sequence, epitopes)
+		epitopes = get_epitopes(sequence)
+		print(f"generation {g}: {len(epitopes)} epitopes")
+		g = g + 1
 
 	print("final:\n", sequence)
