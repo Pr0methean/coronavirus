@@ -25,7 +25,7 @@ wild_type = read_fasta(
 # predict MHC1 epitopes with MHCFlurry
 def mhc1_epitope_predictions(sequence):
     # TODO
-    pass
+    return []
 
 
 def get_epitopes(sequence):
@@ -36,7 +36,7 @@ def get_epitopes(sequence):
 # with the next less hydrophobic one
 def score(aa):
     # TODO
-    pass
+    return 0
 
 
 def mutate(epitope):
