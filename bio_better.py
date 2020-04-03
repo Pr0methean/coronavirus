@@ -68,7 +68,7 @@ def evolve(sequence, epitopes):
     return new_sequence
 
 
-if __name__ is "__main__":
+if __name__ == "__main__":
     epitopes = get_epitopes(wild_type)
     sequence = wild_type
     g = 1
