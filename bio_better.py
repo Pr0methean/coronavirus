@@ -23,12 +23,22 @@ wild_type = read_fasta(
 
 
 # predict MHC1 epitopes with MHCFlurry
+def mhc1_epitope_predictions(sequence):
+    # TODO
+    pass
+
+
 def get_epitopes(sequence):
     return mhc1_epitope_predictions(sequence)
 
 
 # replace the most immunogenic amino acid
 # with the next less hydrophobic one
+def score(aa):
+    # TODO
+    pass
+
+
 def mutate(epitope):
     scores = [score(aa) for aa in epitope]
     target_index = scores.index(max(scores))
@@ -54,7 +64,7 @@ def evolve(sequence, epitopes):
     new_sequence = sequence
     mutations = [mutate(epitope) for epitope in epitopes]
     for epitope, mutation in zip(epitopes, mutations):
-        new_sequence = splice(new_sequence, epitope, mutant)
+        new_sequence = splice(new_sequence, epitope, mutation)
     return new_sequence
 
 
