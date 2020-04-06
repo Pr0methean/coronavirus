@@ -133,3 +133,5 @@ python bio_firewall.py
 - Ferry, Q., Lyutova, R. & Fulga, T. Rational design of inducible CRISPR guide RNAs for de novo assembly of transcriptional programs. Nat Commun 8, 14633 (2017). https://doi.org/10.1038/ncomms14633
 - https://www.salk.edu/wp-content/uploads/2018/05/CasRx-marketing-summary-S2017-0221.pdf
 - What is the reason for using U6 promoter for shRNA vectors? can we replace it with cmv promoter ( for shRNA without flanking by mir30)? https://www.researchgate.net/post/What_is_the_reason_for_using_U6_promoter_for_shRNA_vectors_can_we_replace_it_with_cmv_promoter_for_shRNA_without_flanking_by_mir30
+- Konermann S, Lotfy P, Brideau NJ, Oki J, Shokhirev MN, Hsu PD. Transcriptome Engineering with RNA-Targeting Type VI-D CRISPR Effectors. Cell. 2018;173(3):665–676.e14. doi:10.1016/j.cell.2018.02.033
+- https://en.vectorbuilder.com/vector/VB150925-10026.html

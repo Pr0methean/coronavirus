@@ -1,0 +1,171 @@
+LOCUS       VB150925-10026          5043 bp    DNA     circular SYN 06-APR-2020
+DEFINITION  
+ACCESSION   VB150925-10026
+VERSION     VB150925-10026
+KEYWORDS    .
+SOURCE      
+  ORGANISM  .
+            
+FEATURES             Location/Qualifiers
+     source          1..5043
+     ITR             1..141
+                     /application_notes="Allows replication of the viral genome
+                     and its packaging into virus."
+                     /description="AAV 5' inverted terminal repeat (functional
+                     equivalent of wild-type 5' ITR)"
+                     /label="5' ITR"
+                     /note="color: #aac306; direction: RIGHT"
+                     /official_designation="5' ITR"
+                     /uuid="5f14ec1a645a407dab2725d71bd1c86a"
+     Promoter        169..757
+                     /application_notes="Strong promoter; may have variable
+                     strength in some cell types."
+                     /description="Human cytomegalovirus immediate early
+                     enhancer/promoter"
+                     /full_name="Human cytomegalovirus immediate early promoter"
+                     /label="CMV"
+                     /note="color: #5566f5; direction: RIGHT"
+                     /official_designation="CMV"
+                     /uuid="bbb1016d51c4484eaa5a960df4edf21a"
+     Miscellaneous   782..787
+                     /application_notes="Facilitates translation initiation."
+                     /description="Kozak"
+                     /full_name="Kozak"
+                     /label="Kozak"
+                     /note="color: #ea6167; direction: RIGHT"
+                     /official_designation="Kozak"
+                     /uuid="5f18b25a1234443494a618363f09f052"
+     ORF             788..1507
+                     /application_notes="Commonly used green fluorescent
+                     protein; ranked high in brightness, photostability and pH
+                     stability among all fluorescent proteins."
+                     /description="Enhanced green fluorescent protein; codon
+                     optimized based on a variant of wild type GFP from the
+                     jellyfish Aequorea victoria"
+                     /full_name="EGFP reporter gene"
+                     /label="EGFP"
+                     /note="color: #12f548; direction: RIGHT"
+                     /official_designation="EGFP"
+                     /uuid="0470849bb38e4f4b8a1fe5d436422af3"
+     PolyA_signal    1552..1773
+                     /application_notes="Allows transcription termination and
+                     polyadenylation of mRNA transcribed by Pol II RNA
+                     polymerase."
+                     /description="Simian virus 40 late polyadenylation signal"
+                     /label="SV40 late pA"
+                     /note="color: #9a6cd8; direction: RIGHT"
+                     /official_designation="SV40 late pA"
+                     /uuid="d23bf533e0924dfcb932fc3ddd77e791"
+     ITR             complement(1786..1926)
+                     /application_notes="Allows replication of the viral genome
+                     and its packaging into virus."
+                     /description="AAV 3' inverted terminal repeat"
+                     /label="3' ITR"
+                     /note="color: #f1d895; direction: LEFT"
+                     /official_designation="3' ITR"
+                     /uuid="5b8101593b634e64aa9eef9434216f71"
+     ORF             3007..3867
+                     /application_notes="Allows E. coli to be resistant to
+                     ampicillin."
+                     /description="Ampicillin resistance gene"
+                     /full_name="Ampicillin resistance gene"
+                     /label="Ampicillin"
+                     /note="color: #9d91bf; direction: RIGHT"
+                     /official_designation="Ampicillin"
+                     /uuid="6a7994dc58024d80b36e4a85ad2e1d99"
+     Replication_ori 4038..4626
+                     /application_notes="Facilitates plasmid replication in E.
+                     coli; regulates high-copy plasmid number (500-700)."
+                     /description="pUC origin of replication"
+                     /full_name="pUC origin of replication"
+                     /label="pUC ori"
+                     /note="color: #a949ca; direction: RIGHT"
+                     /official_designation="pUC ori"
+                     /uuid="b978ad4ff785460db448caf63b728237"
+ORIGIN
+        1 cctgcaggca gctgcgcgct cgctcgctca ctgaggccgc ccgggcaaag cccgggcgtc
+       61 gggcgacctt tggtcgcccg gcctcagtga gcgagcgagc gcgcagagag ggagtggcca
+      121 actccatcac taggggttcc tatcgatcaa ctttgtatag aaaagttgta gttattaata
+      181 gtaatcaatt acggggtcat tagttcatag cccatatatg gagttccgcg ttacataact
+      241 tacggtaaat ggcccgcctg gctgaccgcc caacgacccc cgcccattga cgtcaataat
+      301 gacgtatgtt cccatagtaa cgccaatagg gactttccat tgacgtcaat gggtggagta
+      361 tttacggtaa actgcccact tggcagtaca tcaagtgtat catatgccaa gtacgccccc
+      421 tattgacgtc aatgacggta aatggcccgc ctggcattat gcccagtaca tgaccttatg
+      481 ggactttcct acttggcagt acatctacgt attagtcatc gctattacca tggtgatgcg
+      541 gttttggcag tacatcaatg ggcgtggata gcggtttgac tcacggggat ttccaagtct
+      601 ccaccccatt gacgtcaatg ggagtttgtt ttggcaccaa aatcaacggg actttccaaa
+      661 atgtcgtaac aactccgccc cattgacgca aatgggcggt aggcgtgtac ggtgggaggt
+      721 ctatataagc agagctggtt tagtgaaccg tcagatccaa gtttgtacaa aaaagcaggc
+      781 tgccaccatg gtgagcaagg gcgaggagct gttcaccggg gtggtgccca tcctggtcga
+      841 gctggacggc gacgtaaacg gccacaagtt cagcgtgtcc ggcgagggcg agggcgatgc
+      901 cacctacggc aagctgaccc tgaagttcat ctgcaccacc ggcaagctgc ccgtgccctg
+      961 gcccaccctc gtgaccaccc tgacctacgg cgtgcagtgc ttcagccgct accccgacca
+     1021 catgaagcag cacgacttct tcaagtccgc catgcccgaa ggctacgtcc aggagcgcac
+     1081 catcttcttc aaggacgacg gcaactacaa gacccgcgcc gaggtgaagt tcgagggcga
+     1141 caccctggtg aaccgcatcg agctgaaggg catcgacttc aaggaggacg gcaacatcct
+     1201 ggggcacaag ctggagtaca actacaacag ccacaacgtc tatatcatgg ccgacaagca
+     1261 gaagaacggc atcaaggtga acttcaagat ccgccacaac atcgaggacg gcagcgtgca
+     1321 gctcgccgac cactaccagc agaacacccc catcggcgac ggccccgtgc tgctgcccga
+     1381 caaccactac ctgagcaccc agtccgccct gagcaaagac cccaacgaga agcgcgatca
+     1441 catggtcctg ctggagttcg tgaccgccgc cgggatcact ctcggcatgg acgagctgta
+     1501 caagtaaacc cagctttctt gtacaaagtg gtgatggccg gccgcttcga gcagacatga
+     1561 taagatacat tgatgagttt ggacaaacca caactagaat gcagtgaaaa aaatgcttta
+     1621 tttgtgaaat ttgtgatgct attgctttat ttgtaaccat tataagctgc aataaacaag
+     1681 ttaacaacaa caattgcatt cattttatgt ttcaggttca gggggaggtg tgggaggttt
+     1741 tttaaagcaa gtaaaacctc tacaaatgtg gtaatcgata gatctaggaa cccctagtga
+     1801 tggagttggc cactccctct ctgcgcgctc gctcgctcac tgaggccggg cgaccaaagg
+     1861 tcgcccgacg cccgggcttt gcccgggcgg cctcagtgag cgagcgagcg cgcagctgcc
+     1921 tgcaggcagc ttggcactgg ccgtcgtttt acaacgtcgt gactgggaaa accctggcgt
+     1981 tacccaactt aatcgccttg cagcacatcc ccctttcgcc agctggcgta atagcgaaga
+     2041 ggcccgcacc gatcgccctt cccaacagtt gcgcagcctg aatggcgaat ggcgcctgat
+     2101 gcggtatttt ctccttacgc atctgtgcgg tatttcacac cgcatacgtc aaagcaacca
+     2161 tagtacgcgc cctgtagcgg cgcattaagc gcggcgggtg tggtggttac gcgcagcgtg
+     2221 accgctacac ttgccagcgc cctagcgccc gctcctttcg ctttcttccc ttcctttctc
+     2281 gccacgttcg ccggctttcc ccgtcaagct ctaaatcggg ggctcccttt agggttccga
+     2341 tttagtgctt tacggcacct cgaccccaaa aaacttgatt tgggtgatgg ttcacgtagt
+     2401 gggccatcgc cctgatagac ggtttttcgc cctttgacgt tggagtccac gttctttaat
+     2461 agtggactct tgttccaaac tggaacaaca ctcaacccta tctcgggcta ttcttttgat
+     2521 ttataaggga ttttgccgat ttcggcctat tggttaaaaa atgagctgat ttaacaaaaa
+     2581 tttaacgcga attttaacaa aatattaacg tttacaattt tatggtgcac tctcagtaca
+     2641 atctgctctg atgccgcata gttaagccag ccccgacacc cgccaacacc cgctgacgcg
+     2701 ccctgacggg cttgtctgct cccggcatcc gcttacagac aagctgtgac cgtctccggg
+     2761 agctgcatgt gtcagaggtt ttcaccgtca tcaccgaaac gcgcgagacg aaagggcctc
+     2821 gtgatacgcc tatttttata ggttaatgtc atgataataa tggtttctta gacgtcaggt
+     2881 ggcacttttc ggggaaatgt gcgcggaacc cctatttgtt tatttttcta aatacattca
+     2941 aatatgtatc cgctcatgag acaataaccc tgataaatgc ttcaataata ttgaaaaagg
+     3001 aagagtatga gtattcaaca tttccgtgtc gcccttattc ccttttttgc ggcattttgc
+     3061 cttcctgttt ttgctcaccc agaaacgctg gtgaaagtaa aagatgctga agatcagttg
+     3121 ggtgcacgag tgggttacat cgaactggat ctcaacagcg gtaagatcct tgagagtttt
+     3181 cgccccgaag aacgttttcc aatgatgagc acttttaaag ttctgctatg tggcgcggta
+     3241 ttatcccgta ttgacgccgg gcaagagcaa ctcggtcgcc gcatacacta ttctcagaat
+     3301 gacttggttg agtactcacc agtcacagaa aagcatctta cggatggcat gacagtaaga
+     3361 gaattatgca gtgctgccat aaccatgagt gataacactg cggccaactt acttctgaca
+     3421 acgatcggag gaccgaagga gctaaccgct tttttgcaca acatggggga tcatgtaact
+     3481 cgccttgatc gttgggaacc ggagctgaat gaagccatac caaacgacga gcgtgacacc
+     3541 acgatgcctg tagcaatggc aacaacgttg cgcaaactat taactggcga actacttact
+     3601 ctagcttccc ggcaacaatt aatagactgg atggaggcgg ataaagttgc aggaccactt
+     3661 ctgcgctcgg cccttccggc tggctggttt attgctgata aatctggagc cggtgagcgt
+     3721 gggtctcgcg gtatcattgc agcactgggg ccagatggta agccctcccg tatcgtagtt
+     3781 atctacacga cggggagtca ggcaactatg gatgaacgaa atagacagat cgctgagata
+     3841 ggtgcctcac tgattaagca ttggtaactg tcagaccaag tttactcata tatactttag
+     3901 attgatttaa aacttcattt ttaatttaaa aggatctagg tgaagatcct ttttgataat
+     3961 ctcatgacca aaatccctta acgtgagttt tcgttccact gagcgtcaga ccccgtagaa
+     4021 aagatcaaag gatcttcttg agatcctttt tttctgcgcg taatctgctg cttgcaaaca
+     4081 aaaaaaccac cgctaccagc ggtggtttgt ttgccggatc aagagctacc aactcttttt
+     4141 ccgaaggtaa ctggcttcag cagagcgcag ataccaaata ctgttcttct agtgtagccg
+     4201 tagttaggcc accacttcaa gaactctgta gcaccgccta catacctcgc tctgctaatc
+     4261 ctgttaccag tggctgctgc cagtggcgat aagtcgtgtc ttaccgggtt ggactcaaga
+     4321 cgatagttac cggataaggc gcagcggtcg ggctgaacgg ggggttcgtg cacacagccc
+     4381 agcttggagc gaacgaccta caccgaactg agatacctac agcgtgagct atgagaaagc
+     4441 gccacgcttc ccgaagggag aaaggcggac aggtatccgg taagcggcag ggtcggaaca
+     4501 ggagagcgca cgagggagct tccaggggga aacgcctggt atctttatag tcctgtcggg
+     4561 tttcgccacc tctgacttga gcgtcgattt ttgtgatgct cgtcaggggg gcggagccta
+     4621 tggaaaaacg ccagcaacgc ggccttttta cggttcctgg ccttttgctg gccttttgct
+     4681 cacatgttct ttcctgcgtt atcccctgat tctgtggata accgtattac cgcctttgag
+     4741 tgagctgata ccgctcgccg cagccgaacg accgagcgca gcgagtcagt gagcgaggaa
+     4801 gcggaagagc gcccaatacg caaaccgcct ctccccgcgc gttggccgat tcattaatgc
+     4861 agctggcacg acaggtttcc cgactggaaa gcgggcagtg agcgcaacgc aattaatgtg
+     4921 agttagctca ctcattaggc accccaggct ttacacttta tgcttccggc tcgtatgttg
+     4981 tgtggaattg tgagcggata acaatttcac acaggaaaca gctatgacca tgattacgaa
+     5041 ttg
+//
