@@ -23,31 +23,23 @@
 conda create --name bio python=3.7
 conda activate bio
 pip install -r requirements.txt
+sudo make install-redis
 
-# run redis
-sudo apt install redis-server
-redis-server
-
-# run scylladb
-sudo docker container prune -f
-sudo docker run --net=host --name scylla -d scylladb/scylla --experimental
-
-# set up cql schema
-sudo docker cp schema.cql scylla:schema.cql
-
-# test connection to scylla
-sudo docker exec -it scylla cqlsh
+# run scylla and redis
+sudo make redis
+sudo make scylla
 
 # test the code
 pytest
 
-# download the transcriptome
-cd data/host
-wget ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.39_GRCh38.p13/GCF_000001405.39_GRCh38.p13_rna.fna.gz
-cd ../..
-
-# design crispr guides
+# design safe guides
 python bio_firewall.py
+
+# design a plasmid [WIP]
+python plasmid.py 
+
+# clean up
+sudo make clean
 ```
 
 ## Folders
