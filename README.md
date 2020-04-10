@@ -29,6 +29,9 @@ sudo make install-redis
 sudo make redis
 sudo make scylla
 
+# create db schema
+sudo make schema
+
 # test the code
 pytest
 
