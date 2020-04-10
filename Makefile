@@ -7,6 +7,8 @@ redis:
 	redis-server
 
 scylla:
+	sudo docker stop scylla || true
+	sudo docker rm scylla || true
 	sudo mkdir -p /var/lib/scylla/data /var/lib/scylla/commitlog
 	sudo docker run --net=host --name scylla --volume /var/lib/scylla:/var/lib/scylla scylladb/scylla --experimental 1 --overprovisioned 1 --memory 8G
 	
