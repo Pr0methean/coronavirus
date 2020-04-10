@@ -6,9 +6,7 @@ install-redis:
 redis:
 	redis-server --daemonize yes
 
-scylla: clean
-	sudo docker stop scylla || true
-	sudo docker rm scylla || true
+scylla:
 	sudo mkdir -p /var/lib/scylla/data /var/lib/scylla/commitlog
 	sudo docker run -d --net=host --name scylla --volume /var/lib/scylla:/var/lib/scylla scylladb/scylla --experimental 1 --overprovisioned 1 --memory 8G
 	
@@ -20,10 +18,11 @@ schema:
 transcriptome:
 	cd data/host && wget ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.39_GRCh38.p13/GCF_000001405.39_GRCh38.p13_rna.fna.gz
 
-test: redis scylla schema
+test: clean redis scylla schema
 	pytest
 
 clean:
-	-docker kill scylla
+	-docker kill scylla || true
 	-docker container prune -f
-	-redis-server stop
+	-/etc/init.d/redis-server stop
+
