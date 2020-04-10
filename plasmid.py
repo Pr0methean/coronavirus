@@ -2,6 +2,9 @@
 # how?: AAV because it's well-researched and established
 # what?: pCMV-CasRx + pU6-gRNA
 
+from Bio.SeqRecord import SeqRecord
+from Bio.Alphabet import generic_dna
+from Bio.Seq import Seq
 from Bio import SeqIO
 import os
 
@@ -46,22 +49,24 @@ def splice(prior, insert, start, end):
     return prior_left + insert + prior_right
 
 def design_plasmid():
+    right_side = SeqIO.read(BACKBONE_PATH, "genbank").seq.lower()[THREE_PRIME_ITR_END:]
     insert = "".join([str(load_fasta(p)) for p in PATHS])
     dr = load_fasta(DR_PATH)
     g = 0
     while len(insert) < 4700 - len(dr) - K:
-        insert = insert + dr + GUIDES[g]
+        guide = str(Seq(GUIDES[g]).reverse_complement())
+        insert = insert + dr + guide
         g = g + 1
-    right_side = SeqIO.read(BACKBONE_PATH, "genbank").seq.lower()[THREE_PRIME_ITR_END:]
-    plasmid_sequence = insert + right_side
-    return plasmid_sequence, len(insert), g
+    plasmid_id = f"AAV-pCMV-CasRx_w_{g}x{K}_anti-SARS-CoV-2_gRNA_insert_size_{len(insert)}"
+    plasmid_path = os.path.join("plasmids", plasmid_id + ".fa")
+    plasmid_record = SeqRecord(insert + right_side, id=plasmid_id)
+    SeqIO.write(plasmid_record, plasmid_path, "fasta")
+    return plasmid_record
 
 def load_fasta(path, fmt="fasta"):
     return SeqIO.read(path, fmt).seq.lower()
 
 if __name__ == "__main__":
-    plasmid_sequence, insert_size, g = design_plasmid()
-    print(f">AAV-pCMV-CasRx_w_{g}x{K}_anti-SARS-CoV-2_gRNA_insert_size_{insert_size}")
-    print(plasmid_sequence)
+    design_plasmid()
     
 

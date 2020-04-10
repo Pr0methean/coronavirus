@@ -19,14 +19,24 @@
 
 ## Usage
 ```
+# install
 conda create --name bio python=3.7
 conda activate bio
-
-pip install biopython redis pytest tqdm
+pip install -r requirements.txt
 
 # run redis
 sudo apt install redis-server
 redis-server
+
+# run scylladb
+sudo docker container prune -f
+sudo docker run --net=host --name scylla -d scylladb/scylla --experimental
+
+# set up cql schema
+sudo docker cp schema.cql scylla:schema.cql
+
+# test connection to scylla
+sudo docker exec -it scylla cqlsh
 
 # test the code
 pytest
@@ -105,6 +115,8 @@ python bio_firewall.py
 
 - redis.exceptions.ConnectionError: Error 111 connecting to localhost:6379. Connection refused.
     - check Redis is running
+- cassandra.protocol.SyntaxException: <Error from server: code=2000 [Syntax error in CQL query] message="line 1:0 no viable alternative at input 'X'">
+    - check if your input X is supported by the datastax cassandra-driver... some admin stuff only works in cqlsh 
 
 
 ## References

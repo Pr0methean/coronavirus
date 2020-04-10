@@ -1,10 +1,10 @@
 # why?: predict side effects in biotech
 # how?: identify K-length substrings of a target not present in a host
 # what?: hamming distance cutoff
+from cassandra.cluster import Cluster
 import multiprocessing as mp
-import os
-from functools import partial
 from itertools import product
+import os
 
 import frozendict as frozendict
 from Bio import AlignIO, SeqIO
@@ -34,6 +34,9 @@ OUT_PATH = os.path.join("data", "guides", f"k{K}_cutoff{CUTOFF}_guides.csv")
 # cache
 REDIS_ARGS = frozendict.frozendict()
 r = Redis(**REDIS_ARGS)
+# database
+cluster = Cluster(contact_points=["127.0.1.1"])
+session, sadd_stmt, sismember_stmt = None, None, None
 # base -> options map
 WILDCARD = {
     "n": ["a", "c", "t", "g"],
@@ -43,6 +46,25 @@ WILDCARD = {
     "t": ["t"],
     "g": ["g"]
 }
+SADD_INSERT = "insert into rna.trie (pre) values (?) if not exists"
+SADD_UPDATE = "update rna.trie set next = next + ? where pre = ?"
+SISMEMBER = "select * from rna.trie where pre = ? and next contains ? ALLOW FILTERING"
+
+
+def init():
+    global session, sadd, sadd_stmt, sismember, sismember_stmt
+    session = cluster.connect()
+    sadd_insert = session.prepare(SADD_INSERT)
+    sadd_update = session.prepare(SADD_UPDATE)
+    sismember_stmt = session.prepare(SISMEMBER)
+
+    def sadd(k, v):
+        insert_result = session.execute(sadd_insert, [k])
+        update_result = session.execute(sadd_update, [{v}, k])
+        return insert_result and update_result
+
+    def sismember(k, v):
+        return session.execute(sismember_stmt, [k, v]).one() is not None
 
 
 def count_records(path):
@@ -54,47 +76,56 @@ def count_records(path):
     return total
 
 
+def count_kmers(path, k=K):
+    total = 0
+    for _ in generate_kmers(path, k):
+        total = total + 1
+    print(f"Total Kmers: {total}")
+    return total
+
+
 def get_kmers(record, k=K, stringify=1):
     rec = str(record.seq.lower()) if stringify else record
-    rec = [WILDCARD[base] for base in rec]
-    for i in range(len(record) - k + 1):
-        for option in product(*rec[i:i + k]):
-            yield ''.join(option)
+    if 'n' in rec or 'w' in rec:
+        rec = [WILDCARD[base] for base in rec]
+        for i in range(len(record) - k + 1):
+            for option in product(*rec[i:i + k]):
+                yield ''.join(option)
+    else:
+        for i in range(len(record) - k + 1):
+            yield ''.join(rec[i:i+k])
 
 
-def _handle_rec(record, k=K, redis_args=REDIS_ARGS):
-    indices = list(reversed(range(1, k)))
-    r = Redis(**redis_args)
-    for kmer in get_kmers(record, k=k):
-        print(kmer)
-        p = r.pipeline()
-        if r.sismember("hosts", kmer):
-            continue
-        p.sadd("hosts", kmer)
-        for i in indices:
-            prefix, base = kmer[:i], kmer[i]
-            p.sadd(prefix, base)
-            if r.sismember(prefix[:-1], prefix[-1]):
-                break
-        p.execute()
+def generate_kmers(path, k=K):
+    with open(path, "r") as hostfile:
+        for record in SeqIO.parse(hostfile, "fasta"):
+            for kmer in get_kmers(record):
+                yield kmer
+
+
+def _handle_kmer(kmer, k=K):
+    if sismember("hosts", kmer):
+        return
+    sadd("hosts", kmer)
+    for i in reversed(range(1, k)):
+        prefix, base = kmer[:i], kmer[i]
+        sadd(prefix, base)
+        if sismember(prefix[:-1], prefix[-1]):
+            break
+    return
 
 
 def make_hosts(path=HOST_PATH, cpus=CPUS, k=K, redis_args=REDIS_ARGS,
                reindex=REINDEX):
-    r = Redis(**redis_args)
     if reindex:
-        total = count_records(path)
-        handler = partial(_handle_rec, k=k, redis_args=redis_args)
-        with open(path, "r") as hostfile:
-            with mp.Pool(processes=cpus - 1) as pool:
-                _ = list(
+        total = 574817355
+        with mp.Pool(processes=CPUS - 2, initializer=init) as pool:
+            _ = list(
                     tqdm(
-                        pool.imap(
-                            handler,
-                            SeqIO.parse(hostfile, "fasta")
-                        ),
+                        pool.imap(_handle_kmer, generate_kmers(path, k=k)),
                         total=total)
                 )
+    r = Redis()
     return [x.decode() for x in r.smembers("hosts")]
 
 
@@ -173,5 +204,5 @@ def predict_side_effects(k=K, cutoff=CUTOFF, db=r):
 
 if __name__ == "__main__":
     make_hosts()
-    make_targets()
-    predict_side_effects()
+    # make_targets()
+    # predict_side_effects()
