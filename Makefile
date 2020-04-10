@@ -7,7 +7,7 @@ redis:
 	redis-server
 
 scylla:
-	sudo docker run --net=host --name scylla -d scylladb/scylla --experimental 1 --smp 2 --overprovisioned
+	sudo docker run --net=host --name scylla scylladb/scylla --experimental 1 --smp 2 --overprovisioned 1
 	
 schema:
 	docker exec -it scylla cqlsh -e "create keyspace rna with replication = {'class':'SimpleStrategy', 'replication_factor': 1};" && \
