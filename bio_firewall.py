@@ -46,25 +46,6 @@ WILDCARD = {
     "t": ["t"],
     "g": ["g"]
 }
-SADD_INSERT = "insert into rna.trie (pre) values (?) if not exists"
-SADD_UPDATE = "update rna.trie set next = next + ? where pre = ?"
-SISMEMBER = "select * from rna.trie where pre = ? and next contains ? ALLOW FILTERING"
-
-
-def init():
-    global session, sadd, sadd_stmt, sismember, sismember_stmt
-    session = cluster.connect()
-    sadd_insert = session.prepare(SADD_INSERT)
-    sadd_update = session.prepare(SADD_UPDATE)
-    sismember_stmt = session.prepare(SISMEMBER)
-
-    def sadd(k, v):
-        insert_result = session.execute(sadd_insert, [k])
-        update_result = session.execute(sadd_update, [{v}, k])
-        return insert_result and update_result
-
-    def sismember(k, v):
-        return session.execute(sismember_stmt, [k, v]).one() is not None
 
 
 def count_records(path):
@@ -103,23 +84,40 @@ def generate_kmers(path, k=K):
                 yield kmer
 
 
+SAVE_HOST = "insert into rna.hosts (kmer) values (?)"
+SADD_UPDATE = "update rna.trie set next = next + ? where pre = ?"
+# SISMEMBER = "select * from rna.trie where pre = ? and next contains ? ALLOW FILTERING"
+
+
+def init():
+    global session, insert, update, contains, sadd, save, sismember
+    session = cluster.connect()
+    save = session.prepare(SAVE_HOST)
+    update = session.prepare(SADD_UPDATE)
+    # contains = session.prepare(SISMEMBER)
+
+    # def sadd(k, v):
+    #     session.execute(insert, (k, ))
+    #     return session.execute_async(update, ({v}, k))
+
+    def sismember(k, v):
+        return session.execute(contains, [k, v]).one() is not None
+
+
 def _handle_kmer(kmer, k=K):
-    if sismember("hosts", kmer):
-        return
-    sadd("hosts", kmer)
+    session.execute_async(save, (kmer, ))
     for i in reversed(range(1, k)):
-        prefix, base = kmer[:i], kmer[i]
-        sadd(prefix, base)
-        if sismember(prefix[:-1], prefix[-1]):
-            break
-    return
+        # prefix, base = kmer[:i], kmer[i]
+        session.execute_async(update, ({kmer[i]}, kmer[:i]))
+        # if sismember(prefix[:-1], prefix[-1]):
+        #     break
 
 
 def make_hosts(path=HOST_PATH, cpus=CPUS, k=K, redis_args=REDIS_ARGS,
                reindex=REINDEX):
     if reindex:
         total = 574817355
-        with mp.Pool(processes=CPUS - 2, initializer=init) as pool:
+        with mp.Pool(processes=CPUS, initializer=init) as pool:
             _ = list(
                     tqdm(
                         pool.imap(_handle_kmer, generate_kmers(path, k=k)),
