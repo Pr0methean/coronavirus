@@ -4,11 +4,11 @@ install-redis:
 	apt install redis-server
 
 redis:
-	redis-server
+	redis-server --daemonize yes
 
 scylla:
 	sudo mkdir -p /var/lib/scylla/data /var/lib/scylla/commitlog
-	sudo docker run --net=host --name scylla --volume /var/lib/scylla:/var/lib/scylla scylladb/scylla --experimental 1 --overprovisioned 1 --reserve-memory 8G
+	sudo docker run -d --net=host --name scylla --volume /var/lib/scylla:/var/lib/scylla scylladb/scylla --experimental 1 --overprovisioned 1 --memory 8G
 	
 schema:
 	docker exec -it scylla cqlsh -e "create keyspace rna with replication = {'class':'SimpleStrategy', 'replication_factor': 1};" && \
@@ -18,10 +18,11 @@ schema:
 transcriptome:
 	cd data/host && wget ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.39_GRCh38.p13/GCF_000001405.39_GRCh38.p13_rna.fna.gz
 
-test: redis scylla schema
+test: clean redis scylla schema
 	pytest
 
 clean:
-	-docker kill scylla
+	-docker kill scylla || true
 	-docker container prune -f
-	-redis-server stop
+	-/etc/init.d/redis-server stop
+
