@@ -204,6 +204,6 @@ def predict_side_effects(k=K, cutoff=CUTOFF):
 
 
 if __name__ == "__main__":
-    # make_hosts()
-    # make_targets()
+    make_trie()
+    make_targets()
     predict_side_effects()
