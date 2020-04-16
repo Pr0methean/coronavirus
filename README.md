@@ -23,10 +23,8 @@
 conda create --name bio python=3.7
 conda activate bio
 pip install -r requirements.txt
-sudo make install-redis
 
-# run scylla and redis
-sudo make redis
+# run scylla
 sudo make scylla
 
 # create db schema

@@ -2,14 +2,12 @@
 # how?: identify K-length substrings of a target not present in a host
 # what?: hamming distance cutoff
 from cassandra.cluster import Cluster
-import multiprocessing as mp
+from Bio import AlignIO, SeqIO
 from itertools import product
+import multiprocessing as mp
+from tqdm import tqdm
 import os
 
-import frozendict as frozendict
-from Bio import AlignIO, SeqIO
-from redis import Redis
-from tqdm import tqdm
 
 # cpus
 CPUS = 12
@@ -26,17 +24,14 @@ CORONAVIRUS_CONSENSUS = "HKU1+MERS+SARS+nCoV-Consensus.clu"
 TARGET_PATH = os.path.join("data", "alignments", CORONAVIRUS_CONSENSUS)
 TARGET_ID = "nCoV"
 # mismatch cutoff (e.g. how close must two kmers be to bind?)
-CUTOFF = 4
+CUTOFF = 5
 # bases 15-21 of Cas13 gRNA don't tolerate mismatch (Wessels et al 2019)
 OFFSET_1, OFFSET_2 = 14, 21
 # path for output
 OUT_PATH = os.path.join("data", "guides", f"k{K}_cutoff{CUTOFF}_guides.csv")
-# cache
-REDIS_ARGS = frozendict.frozendict()
-r = Redis(**REDIS_ARGS)
 # database
 cluster = Cluster(contact_points=["127.0.1.1"])
-session, sadd_stmt, sismember_stmt = None, None, None
+global_session = cluster.connect()
 # base -> options map
 WILDCARD = {
     "n": ["a", "c", "t", "g"],
@@ -86,7 +81,7 @@ def generate_kmers(path, k=K):
 
 SAVE_HOST = "insert into rna.hosts (kmer) values (?)"
 SADD_UPDATE = "update rna.trie set next = next + ? where pre = ?"
-# SISMEMBER = "select * from rna.trie where pre = ? and next contains ? ALLOW FILTERING"
+NEXT = global_session.prepare("select * from rna.trie where pre = ?")
 
 
 def init():
@@ -94,52 +89,101 @@ def init():
     session = cluster.connect()
     save = session.prepare(SAVE_HOST)
     update = session.prepare(SADD_UPDATE)
-    # contains = session.prepare(SISMEMBER)
-
-    # def sadd(k, v):
-    #     session.execute(insert, (k, ))
-    #     return session.execute_async(update, ({v}, k))
-
-    def sismember(k, v):
-        return session.execute(contains, [k, v]).one() is not None
 
 
 def _handle_kmer(kmer, k=K):
     session.execute_async(save, (kmer, ))
     for i in reversed(range(1, k)):
-        # prefix, base = kmer[:i], kmer[i]
         session.execute_async(update, ({kmer[i]}, kmer[:i]))
-        # if sismember(prefix[:-1], prefix[-1]):
-        #     break
 
 
-def make_hosts(path=HOST_PATH, cpus=CPUS, k=K, redis_args=REDIS_ARGS,
-               reindex=REINDEX):
-    if reindex:
-        total = 574817355
-        with mp.Pool(processes=CPUS, initializer=init) as pool:
-            _ = list(
-                    tqdm(
-                        pool.imap(_handle_kmer, generate_kmers(path, k=k)),
-                        total=total)
-                )
-    r = Redis()
-    return [x.decode() for x in r.smembers("hosts")]
+def make_trie(path=HOST_PATH, cpus=CPUS, k=K):
+    with mp.Pool(processes=CPUS, initializer=init) as pool:
+        _ = list(
+                tqdm(
+                    pool.imap(_handle_kmer, generate_kmers(path, k=k)),
+                    total=574817355)
+            )
 
 
-def _find(path, target, d, k=K, db=r, cutoff=CUTOFF):
+def _all_equal(arr):
+    return arr.count(arr[0]) == len(arr)
+
+
+ZADD = global_session.prepare(
+    "insert into rna.targets (target, n, start, kmer, score, overlaps, host_has) values (?, ?, ?, ?, ?, ?, ?)")
+
+
+def zadd(n, kmer, score, start, target='ncov', overlaps=True, host_has=True):
+    global_session.execute_async(
+        ZADD,
+        (target, n, start, kmer, score, overlaps, host_has)
+        )
+
+
+def zrevrangebyscore(filter_overlaps=False):
+    statement = "select n, kmer, score, start from rna.targets"
+    if filter_overlaps:
+        statement = statement + " where overlaps = False allow filtering"
+    return global_session.execute(statement)
+
+
+def overlap(s1, s2, k=K):
+    if len(set(range(s1, s1+k)).intersection(range(s2, s2+k))) > 0:
+        return True
+    return False
+
+
+def make_targets(path=TARGET_PATH, id=TARGET_ID, k=K,
+                 offset_1=OFFSET_1, offset_2=OFFSET_2):
+    alignment = AlignIO.read(path, "clustal")
+    ids = [seq.id for seq in alignment]
+    index_of_target = ids.index(id)
+    alignment_length = alignment.get_alignment_length()
+    conserved = [
+        1 if _all_equal([seq[i] for seq in alignment]) else 0
+        for i in range(alignment_length)
+    ]
+    n = 1
+    for start in range(alignment_length - k + 1):
+        kmer = str(alignment[index_of_target][start:start + k].seq).lower()
+        offset_conserved = all(conserved[start + offset_1:start + offset_2])
+        if "-" in kmer or not offset_conserved:
+            continue
+        n_conserved = sum(conserved[start:start + k])
+        if n_conserved > 0:
+            print(f"{kmer} at {start} has {int(n_conserved)} conserved bases")
+            zadd(n, kmer, n_conserved, start)
+            n = n + 1
+    T = zrevrangebyscore()
+    best = T.one()
+    print(f"top {k}mer {best.kmer} has {int(best.score)} conserved in {ids}")
+    no_overlaps = []
+    for row in T:
+        if any([overlap(other.start, row.start) for other in no_overlaps]):
+            continue
+        no_overlaps.append(row)
+        zadd(row.n, row.kmer, row.score, row.start, overlaps=False)
+    [print(r.kmer, r.score, r.start) for r in no_overlaps]
+    print(f"{len(no_overlaps)} non-overlapping targets")
+    no_overlaps_db = zrevrangebyscore(filter_overlaps=1)
+    assert len(list(no_overlaps_db)) == len(no_overlaps)
+    return no_overlaps
+
+
+def _find(path, target, d, k=K, cutoff=CUTOFF):
+    print("predict side effects", path, target, "distance", d)
     if not target:
         if len(path) is k:
             yield (path, d)
         return
     target_base, suffix = target[0], target[1:]
-    node = path if path else "root"
-    for option in db.smembers(node):
-        host_base = option.decode()
+    pre = path if path else "root"
+    for host_base in global_session.execute(NEXT, (pre,)).one().next:
         step = 1 if host_base != target_base else 0
-        if d + step > CUTOFF:
+        if d + step >= CUTOFF:
             return
-        for result in _find(path + host_base, suffix, d + step, k, db, cutoff):
+        for result in _find(path + host_base, suffix, d + step, k, cutoff):
             yield result
 
 
@@ -149,58 +193,17 @@ def _host_has(target, cutoff=CUTOFF, k=K):
     return len(matches) > 0
 
 
-def _all_equal(arr):
-    return arr.count(arr[0]) == len(arr)
-
-
-def make_targets(path=TARGET_PATH, id=TARGET_ID, k=K, db=r, offset_1=OFFSET_1,
-                 offset_2=OFFSET_2):
-    targets_key = f"targets_{k}"
-    alignment = AlignIO.read(path, "clustal")
-    ids = [seq.id for seq in alignment]
-    index_of_target = ids.index(id)
-    alignment_length = alignment.get_alignment_length()
-    conserved = [
-        1 if _all_equal([seq[i] for seq in alignment]) else 0
-        for i in range(alignment_length)
-    ]
-    for start in range(alignment_length - k + 1):
-        kmer = str(alignment[index_of_target][start:start + k].seq).lower()
-        if "-" in kmer or not all(conserved[start + offset_1:start + offset_2]):
+def predict_side_effects(k=K, cutoff=CUTOFF):
+    for t in zrevrangebyscore(filter_overlaps=1):
+        if _host_has(t.kmer, cutoff=cutoff):
             continue
-        n_conserved = sum(conserved[start:start + k])
-        if n_conserved > 0:
-            print(f"{kmer} at {start} has {int(n_conserved)} conserved bases")
-            db.zadd(targets_key, {kmer: n_conserved})
-    targets = db.zrevrangebyscore(targets_key, 9001, 0, withscores=True)
-    T = [(t[0].decode(), t[1]) for t in targets]
-    print(f"top {k}mer {T[0][0]} has {T[0][1]} bases conserved in {ids}")
-    return T
-
-
-def predict_side_effects(k=K, cutoff=CUTOFF, db=r):
-    if not db.exists("hosts") and db.exists("targets"):
-        raise Exception("hosts and targets required to predict side effects")
-    targets_key, good_targets_key = f"targets_{k}", f"good_targets_{k}"
-    targets = db.zrevrangebyscore(targets_key, 9001, 0)
-    for target in targets:
-        t = target.decode()
-        if _host_has(t, cutoff=cutoff):
-            continue
-        db.zadd(good_targets_key, {t: db.zscore(targets_key, t)})
-    good_targets = db.zrevrangebyscore(
-        good_targets_key, 90, 0, withscores=True)
-    GT = [(gt[0].decode(), gt[1]) for gt in good_targets]
-    [print(
-        f"good target {gt[0]} has {int(gt[1])} of {k} bases conserved ("
-        f"{int((gt[1] / k) * 100)}%)")
-        for gt in GT]
-    with open(OUT_PATH, "w+") as outfile:
-        outfile.writelines([f"{gt[0]}, {gt[1]}\n" for gt in GT])
-    return GT
+        print(
+            f"good target {t.kmer} is {int(t.score)}/{k} conserved ("
+            f"{int((t.score / k) * 100)}%)")
+        zadd(t.n, t.kmer, t.score, t.start, overlaps=False, host_has=False)
 
 
 if __name__ == "__main__":
-    make_hosts()
+    # make_hosts()
     # make_targets()
-    # predict_side_effects()
+    predict_side_effects()

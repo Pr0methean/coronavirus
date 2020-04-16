@@ -1,5 +1,4 @@
 biopython==1.76
-redis==3.4.1
 pytest==5.4.1
 tqdm==4.44.1
 flake8==3.7.9
