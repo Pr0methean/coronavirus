@@ -5,6 +5,8 @@ trie.*
 /db/
 /venv-pypy/
 /db-old/
+/tmp/
+*.rdb
 .idea
 .whitesource
 __pycache__

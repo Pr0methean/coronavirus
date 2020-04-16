@@ -2,7 +2,7 @@ SHELL=/bin/bash
 
 scylla:
 	sudo mkdir -p /var/lib/scylla/data /var/lib/scylla/commitlog
-	sudo docker run --net=host --name scylla --volume /var/lib/scylla:/var/lib/scylla scylladb/scylla --experimental 1 --overprovisioned 1 --reserve-memory 8G
+	sudo docker run -d --net=host --name scylla --volume /var/lib/scylla:/var/lib/scylla scylladb/scylla --experimental 1 --overprovisioned 1 --memory 8G
 	
 schema:
 	docker exec -it scylla cqlsh -e "create keyspace rna with replication = {'class':'SimpleStrategy', 'replication_factor': 1};" && \
@@ -17,5 +17,5 @@ test:
 	pytest
 
 clean:
-	-docker kill scylla
+	-docker kill scylla || true
 	-docker container prune -f
