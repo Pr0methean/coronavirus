@@ -1,5 +1,7 @@
 SHELL=/bin/bash
 
+# Prerequisites on Ubuntu: apt install docker-compose docker.io 
+
 scylla:
 	sudo mkdir -p /var/lib/scylla/data /var/lib/scylla/commitlog
 	sudo systemctl unmask docker
