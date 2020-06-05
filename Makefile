@@ -2,10 +2,12 @@ SHELL=/bin/bash
 
 scylla:
 	sudo mkdir -p /var/lib/scylla/data /var/lib/scylla/commitlog
-	sudo docker run -d --net=host --name scylla --volume /var/lib/scylla:/var/lib/scylla scylladb/scylla --experimental 1 --overprovisioned 1 --memory 8G
+	sudo systemctl unmask docker
+	sudo systemctl start docker
+	docker-compose up -d
 	
-schema:
-	docker exec -it scylla cqlsh -e "create keyspace rna with replication = {'class':'SimpleStrategy', 'replication_factor': 1};" && \
+schema: scylla
+	until docker exec -it scylla cqlsh -e "create keyspace rna with replication = {'class':'SimpleStrategy', 'replication_factor': 1};";	do :; done # work around an issue where Scylla isn't ready yet when docker-compose exits
 	docker exec -it scylla cqlsh -e "create table rna.trie (pre text, next set<text>, primary key (pre));"
 	docker exec -it scylla cqlsh -e "create table rna.hosts (kmer text, primary key (kmer));"
 	docker exec -it scylla cqlsh -e "create table rna.targets (target text, n bigint, start bigint, kmer text, score float, host_has boolean, side_effect boolean, primary key ((target), score, n)) with clustering order by (score desc);"
@@ -19,3 +21,5 @@ test:
 clean:
 	-docker kill scylla || true
 	-docker container prune -f
+	sudo rm -rf /var/lib/scylla
+

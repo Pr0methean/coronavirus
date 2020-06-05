@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  scylla:
+    image: scylladb/scylla
+    container_name: scylla
+    volumes:
+      - '/var/lib/scylla:/var/lib/scylla'
+
