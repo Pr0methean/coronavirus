@@ -30,7 +30,7 @@ OFFSET_1, OFFSET_2 = 14, 21
 # path for output
 OUT_PATH = os.path.join("data", "guides", f"k{K}_cutoff{CUTOFF}_guides.csv")
 # database
-cluster = Cluster(contact_points=["127.0.1.1"])
+cluster = Cluster(contact_points=["172.28.1.1"])
 global_session = cluster.connect()
 # base -> options map
 WILDCARD = {

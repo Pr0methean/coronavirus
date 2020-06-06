@@ -1,9 +1,24 @@
 version: '3'
 
 services:
-  scylla:
+  scylla-manager:
+    image: scylladb/scylla-manager
+    container_name: scylla-manager
+    depends_on:
+      - scylla-manager-db
+
+  scylla-manager-db:
     image: scylladb/scylla
     container_name: scylla
     volumes:
       - '/var/lib/scylla:/var/lib/scylla'
+    networks:
+      coronavirus:
+        ipv4_address: 172.28.1.1
 
+networks:
+  coronavirus:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
