@@ -1,13 +1,13 @@
 # why?: predict side effects in biotech
 # how?: identify K-length substrings of a target not present in a host
 # what?: hamming distance cutoff
-from cassandra.cluster import Cluster
-from Bio import AlignIO, SeqIO
-from itertools import product
 import multiprocessing as mp
-from tqdm import tqdm
 import os
+from itertools import product
 
+from Bio import AlignIO, SeqIO
+from cassandra.cluster import Cluster
+from tqdm import tqdm
 
 # cpus
 CPUS = 12
@@ -166,7 +166,7 @@ def make_targets(path=TARGET_PATH, id=TARGET_ID, k=K,
         zadd(row.n, row.kmer, row.score, row.start, overlaps=False)
     [print(r.kmer, r.score, r.start) for r in no_overlaps]
     print(f"{len(no_overlaps)} non-overlapping targets")
-    no_overlaps_db = zrevrangebyscore(filter_overlaps=1)
+    no_overlaps_db = zrevrangebyscore(filter_overlaps=True)
     assert len(list(no_overlaps_db)) == len(no_overlaps)
     return no_overlaps
 
@@ -194,7 +194,7 @@ def _host_has(target, cutoff=CUTOFF, k=K):
 
 
 def predict_side_effects(k=K, cutoff=CUTOFF):
-    for t in zrevrangebyscore(filter_overlaps=1):
+    for t in zrevrangebyscore(filter_overlaps=True):
         if _host_has(t.kmer, cutoff=cutoff):
             continue
         print(

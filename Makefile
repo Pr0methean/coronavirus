@@ -15,7 +15,7 @@ schema: scylla
 	docker exec -it scylla cqlsh -e "create table rna.targets (target text, n bigint, start bigint, kmer text, score float, host_has boolean, side_effect boolean, overlaps boolean, primary key ((target), score, n)) with clustering order by (score desc);"
 
 transcriptome:
-	cd data/host && wget ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.39_GRCh38.p13/GCF_000001405.39_GRCh38.p13_rna.fna.gz
+	cd data/host && wget ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.39_GRCh38.p13/GCF_000001405.39_GRCh38.p13_rna.fna.gz && gunzip GCF_000001405.39_GRCh38.p13_rna.fna.gz
 
 test:  
 	pytest
